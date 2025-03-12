@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>/Users/elvisbrevi/Code/games/monogame-test/Content/ball.png</SourceFile>
+  <SourceTime>2025-03-06T05:20:22.4678945-03:00</SourceTime>
+  <DestFile>/Users/elvisbrevi/Code/games/monogame-test/Content/bin/DesktopGL/Content/ball.xnb</DestFile>
+  <DestTime>2025-03-06T05:28:24.2332928-03:00</DestTime>
+  <Importer>TextureImporter</Importer>
+  <ImporterTime>2024-08-16T13:05:56-04:00</ImporterTime>
+  <Processor>TextureProcessor</Processor>
+  <ProcessorTime>2024-08-16T13:05:56-04:00</ProcessorTime>
+  <Parameters>
+    <Key>ColorKeyEnabled</Key>
+    <Value>false</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>
