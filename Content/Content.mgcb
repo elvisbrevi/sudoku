@@ -18,3 +18,10 @@
 /processor:TextureProcessor
 /processorParam:ColorKeyEnabled=false
 /build:ball.png
+
+#begin DefaultFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:DefaultFont.spritefont

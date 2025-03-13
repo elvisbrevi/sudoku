@@ -1,1 +1,3 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
+"/Users/elvisbrevi/Code/games/sudoku/Content/ball.png","/Users/elvisbrevi/Code/games/sudoku/Content/bin/DesktopGL/Content/ball.xnb","TextureProcessor","Texture2DContent",8368,16469,0.074745
+"/Users/elvisbrevi/Code/games/sudoku/Content/DefaultFont.spritefont","/Users/elvisbrevi/Code/games/sudoku/Content/bin/DesktopGL/Content/DefaultFont.xnb","FontDescriptionProcessor","SpriteFontContent",473,37922,0.179506

@@ -6,12 +6,18 @@ namespace monogame_test;
 
 public class Game1 : Game
 {
-    Texture2D ballTexture;
+    //Texture2D ballTexture;
+    // The Sprite Font reference to draw with
+    SpriteFont font1;
 
+    // The position to draw the text
+    Vector2 fontPos;
+    int[,] grid;
+    int gridSize = 5;
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     Vector2 ballPosition;
-        float ballSpeed;
+    float ballSpeed;
 
     public Game1()
     {
@@ -27,6 +33,14 @@ public class Game1 : Game
                                    _graphics.PreferredBackBufferHeight / 2);
         ballSpeed = 100f;
 
+        font1 = Content.Load<SpriteFont>("DefaultFont");
+        Viewport viewport = _graphics.GraphicsDevice.Viewport;
+
+        // TODO: Load your game content here            
+        fontPos = new Vector2(viewport.Width / 2, viewport.Height / 2);
+
+        grid = new int[gridSize * gridSize, gridSize * gridSize];
+
         base.Initialize();
     }
 
@@ -36,7 +50,7 @@ public class Game1 : Game
     _spriteBatch = new SpriteBatch(GraphicsDevice);
 
     // TODO: use this.Content to load your game content here
-    ballTexture = Content.Load<Texture2D>("ball");
+    //ballTexture = Content.Load<Texture2D>("ball");
     }
 
     protected override void Update(GameTime gameTime)
@@ -46,29 +60,29 @@ public class Game1 : Game
 
         // TODO: Add your update logic here
         // The time since Update was called last.
-        float updatedBallSpeed = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        // float updatedBallSpeed = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        var kstate = Keyboard.GetState();
+        // var kstate = Keyboard.GetState();
         
-        if (kstate.IsKeyDown(Keys.Up))
-        {
-            ballPosition.Y -= updatedBallSpeed;
-        }
+        // if (kstate.IsKeyDown(Keys.Up))
+        // {
+        //     ballPosition.Y -= updatedBallSpeed;
+        // }
         
-        if (kstate.IsKeyDown(Keys.Down))
-        {
-            ballPosition.Y += updatedBallSpeed;
-        }
+        // if (kstate.IsKeyDown(Keys.Down))
+        // {
+        //     ballPosition.Y += updatedBallSpeed;
+        // }
         
-        if (kstate.IsKeyDown(Keys.Left))
-        {
-            ballPosition.X -= updatedBallSpeed;
-        }
+        // if (kstate.IsKeyDown(Keys.Left))
+        // {
+        //     ballPosition.X -= updatedBallSpeed;
+        // }
         
-        if (kstate.IsKeyDown(Keys.Right))
-        {
-            ballPosition.X += updatedBallSpeed;
-        }
+        // if (kstate.IsKeyDown(Keys.Right))
+        // {
+        //     ballPosition.X += updatedBallSpeed;
+        // }
 
         base.Update(gameTime);
     }
@@ -79,7 +93,20 @@ public class Game1 : Game
 
     // TODO: Add your drawing code here
     _spriteBatch.Begin();
-    _spriteBatch.Draw(ballTexture, ballPosition, Color.White);
+    // _spriteBatch.Draw(ballTexture, ballPosition, Color.White);
+
+    // Draw the string
+    for (int i = 0; i < gridSize * gridSize; i++)
+    {
+        int count = 1;
+        
+        for (int j = 0; j < gridSize * gridSize; j++)
+        {
+            grid[i, j] = count;
+            _spriteBatch.DrawString(font1, grid[i, j].ToString(), new Vector2(i * 20, j * 20), Color.Black);
+            count++;
+        }
+    }
     _spriteBatch.End();
 
     base.Draw(gameTime);
