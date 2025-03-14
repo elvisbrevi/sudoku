@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -37,6 +38,7 @@ public class Game1 : Game
         fontPos = new Vector2(viewport.Width / 2, viewport.Height / 2);
 
         gridSize = difficulty * difficulty;
+
         grid = new int[gridSize, gridSize];
 
         assignBoardValues();
@@ -60,13 +62,16 @@ public class Game1 : Game
 
     public void assignBoardValues()
     {
+        // Assign values to the cells in the grid
         for (int row = 0; row < gridSize; row++)
         {
+            // Create a list of values for the vertical column
             List<int> verticalTempValues = new List<int>();
-            for (int i = 0; i < gridSize; i++) {
+            for (int i = 1; i <= gridSize; i++) {
                 verticalTempValues.Add(i);
-                Console.WriteLine("Vertical temp values: " + verticalTempValues[i]);
             }
+
+            // Assign values to the cells in the row
             for (int column = 0; column < gridSize; column++)
             {  
                 assignCellValues(row, column, verticalTempValues);
@@ -74,16 +79,26 @@ public class Game1 : Game
         }
     }
 
+    // Assign values to the cells in the row
     void assignCellValues(int row, int column, List<int> verticalTempValues)
     {
-        Console.WriteLine("Assigning cell values for row: " + row + " and column: " + column);
+        for (int i = 0; i <= row; i++) {
+            Console.Write(grid[i, column]);
+            // if (grid[i, column] != 0) {
+            //     Console.WriteLine("Index of " + grid[i, column] + " is " + verticalTempValues.IndexOf(grid[i, column]));
+            //     verticalTempValues.RemoveAt(verticalTempValues.IndexOf(grid[i, column]));
+            // }
+        }
+        Console.WriteLine();
+
+        // Get a random key from the verticalTempValues list
         Func<int> getRandomKey = delegate() {
             Random random = new Random();
             return random.Next(0, verticalTempValues.Count);
         };
         
         int randomIndex = getRandomKey();
-        Console.WriteLine("Random index: " + randomIndex);
+
         grid[row, column] = verticalTempValues[randomIndex];
         verticalTempValues.RemoveAt(randomIndex);
     }
