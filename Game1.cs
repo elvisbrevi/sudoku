@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -13,11 +16,10 @@ public class Game1 : Game
     // The position to draw the text
     Vector2 fontPos;
     int[,] grid;
-    int gridSize = 5;
+    int difficulty = 3;
+    int gridSize;
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    Vector2 ballPosition;
-    float ballSpeed;
 
     public Game1()
     {
@@ -28,18 +30,16 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-        ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 2,
-                                   _graphics.PreferredBackBufferHeight / 2);
-        ballSpeed = 100f;
-
         font1 = Content.Load<SpriteFont>("DefaultFont");
         Viewport viewport = _graphics.GraphicsDevice.Viewport;
 
         // TODO: Load your game content here            
         fontPos = new Vector2(viewport.Width / 2, viewport.Height / 2);
 
-        grid = new int[gridSize * gridSize, gridSize * gridSize];
+        gridSize = difficulty * difficulty;
+        grid = new int[gridSize, gridSize];
+
+        assignBoardValues();
 
         base.Initialize();
     }
@@ -48,9 +48,6 @@ public class Game1 : Game
     {
         // Create a new SpriteBatch, which can be used to draw textures.
     _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-    // TODO: use this.Content to load your game content here
-    //ballTexture = Content.Load<Texture2D>("ball");
     }
 
     protected override void Update(GameTime gameTime)
@@ -58,57 +55,56 @@ public class Game1 : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
-        // The time since Update was called last.
-        // float updatedBallSpeed = ballSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-        // var kstate = Keyboard.GetState();
-        
-        // if (kstate.IsKeyDown(Keys.Up))
-        // {
-        //     ballPosition.Y -= updatedBallSpeed;
-        // }
-        
-        // if (kstate.IsKeyDown(Keys.Down))
-        // {
-        //     ballPosition.Y += updatedBallSpeed;
-        // }
-        
-        // if (kstate.IsKeyDown(Keys.Left))
-        // {
-        //     ballPosition.X -= updatedBallSpeed;
-        // }
-        
-        // if (kstate.IsKeyDown(Keys.Right))
-        // {
-        //     ballPosition.X += updatedBallSpeed;
-        // }
-
         base.Update(gameTime);
+    }
+
+    public void assignBoardValues()
+    {
+        for (int row = 0; row < gridSize; row++)
+        {
+            List<int> verticalTempValues = new List<int>();
+            for (int i = 0; i < gridSize; i++) {
+                verticalTempValues.Add(i);
+                Console.WriteLine("Vertical temp values: " + verticalTempValues[i]);
+            }
+            for (int column = 0; column < gridSize; column++)
+            {  
+                assignCellValues(row, column, verticalTempValues);
+            }
+        }
+    }
+
+    void assignCellValues(int row, int column, List<int> verticalTempValues)
+    {
+        Console.WriteLine("Assigning cell values for row: " + row + " and column: " + column);
+        Func<int> getRandomKey = delegate() {
+            Random random = new Random();
+            return random.Next(0, verticalTempValues.Count);
+        };
+        
+        int randomIndex = getRandomKey();
+        Console.WriteLine("Random index: " + randomIndex);
+        grid[row, column] = verticalTempValues[randomIndex];
+        verticalTempValues.RemoveAt(randomIndex);
     }
 
     protected override void Draw(GameTime gameTime)
     {
         _graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-    // TODO: Add your drawing code here
-    _spriteBatch.Begin();
-    // _spriteBatch.Draw(ballTexture, ballPosition, Color.White);
+        // TODO: Add your drawing code here
+        _spriteBatch.Begin();
 
-    // Draw the string
-    for (int i = 0; i < gridSize * gridSize; i++)
-    {
-        int count = 1;
-        
-        for (int j = 0; j < gridSize * gridSize; j++)
+        // Draw the string
+        for (int i = 0; i < gridSize; i++)
         {
-            grid[i, j] = count;
-            _spriteBatch.DrawString(font1, grid[i, j].ToString(), new Vector2(i * 20, j * 20), Color.Black);
-            count++;
+            for (int j = 0; j < gridSize; j++)
+            {
+                _spriteBatch.DrawString(font1, grid[i, j].ToString(), new Vector2(i * 20, j * 20), Color.Black);
+            }
         }
-    }
-    _spriteBatch.End();
+        _spriteBatch.End();
 
-    base.Draw(gameTime);
+        base.Draw(gameTime);
     }
 }
