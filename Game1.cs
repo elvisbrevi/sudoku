@@ -349,9 +349,142 @@ namespace monogame_test
         }
     }
 
+    private void HandleArrowKeyNavigation(KeyboardState keyboardState)
+    {
+        // Check if arrow keys are pressed to navigate between cells
+        if (keyboardState.IsKeyDown(Keys.Left) && !_prevKeyboardState.IsKeyDown(Keys.Left))
+        {
+            // Move selection left, wrap around to the end of the previous row if needed
+            if (_selectedCol > 0)
+            {
+                _selectedCol--;
+            }
+            else if (_selectedRow > 0)
+            {
+                _selectedRow--;
+                _selectedCol = _sudokuGrid.GridSize - 1;
+            }
+            
+            // Skip revealed cells (original clues)
+            while (_selectedRow >= 0 && _selectedCol >= 0 && _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            {
+                // Continue moving left or to previous row if needed
+                if (_selectedCol > 0)
+                {
+                    _selectedCol--;
+                }
+                else if (_selectedRow > 0)
+                {
+                    _selectedRow--;
+                    _selectedCol = _sudokuGrid.GridSize - 1;
+                }
+                else
+                {
+                    break; // Can't move anymore
+                }
+            }
+        }
+        else if (keyboardState.IsKeyDown(Keys.Right) && !_prevKeyboardState.IsKeyDown(Keys.Right))
+        {
+            // Move selection right, wrap around to the start of the next row if needed
+            if (_selectedCol < _sudokuGrid.GridSize - 1)
+            {
+                _selectedCol++;
+            }
+            else if (_selectedRow < _sudokuGrid.GridSize - 1)
+            {
+                _selectedRow++;
+                _selectedCol = 0;
+            }
+            
+            // Skip revealed cells (original clues)
+            while (_selectedRow >= 0 && _selectedCol >= 0 && 
+                   _selectedRow < _sudokuGrid.GridSize && _selectedCol < _sudokuGrid.GridSize && 
+                   _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            {
+                // Continue moving right or to next row if needed
+                if (_selectedCol < _sudokuGrid.GridSize - 1)
+                {
+                    _selectedCol++;
+                }
+                else if (_selectedRow < _sudokuGrid.GridSize - 1)
+                {
+                    _selectedRow++;
+                    _selectedCol = 0;
+                }
+                else
+                {
+                    break; // Can't move anymore
+                }
+            }
+        }
+        else if (keyboardState.IsKeyDown(Keys.Up) && !_prevKeyboardState.IsKeyDown(Keys.Up))
+        {
+            // Move selection up, stay in the same column
+            if (_selectedRow > 0)
+            {
+                _selectedRow--;
+            }
+            
+            // Skip revealed cells (original clues)
+            while (_selectedRow >= 0 && _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            {
+                if (_selectedRow > 0)
+                {
+                    _selectedRow--;
+                }
+                else
+                {
+                    break; // Can't move anymore
+                }
+            }
+        }
+        else if (keyboardState.IsKeyDown(Keys.Down) && !_prevKeyboardState.IsKeyDown(Keys.Down))
+        {
+            // Move selection down, stay in the same column
+            if (_selectedRow < _sudokuGrid.GridSize - 1)
+            {
+                _selectedRow++;
+            }
+            
+            // Skip revealed cells (original clues)
+            while (_selectedRow < _sudokuGrid.GridSize && _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            {
+                if (_selectedRow < _sudokuGrid.GridSize - 1)
+                {
+                    _selectedRow++;
+                }
+                else
+                {
+                    break; // Can't move anymore
+                }
+            }
+        }
+        
+        // If no cell is selected yet, select the first non-revealed cell
+        if (_selectedRow < 0 || _selectedCol < 0)
+        {
+            for (int row = 0; row < _sudokuGrid.GridSize; row++)
+            {
+                for (int col = 0; col < _sudokuGrid.GridSize; col++)
+                {
+                    if (!_sudokuGrid.Revealed[row, col])
+                    {
+                        _selectedRow = row;
+                        _selectedCol = col;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     private void HandleNumberInput(KeyboardState keyboardState)
     {
-        // Only process input if a cell is selected
+        // Handle arrow key navigation for cell selection
+        HandleArrowKeyNavigation(keyboardState);
+
+        // Only process number input if a cell is selected
         if (_selectedRow >= 0 && _selectedCol >= 0)
         {
             // Check for number keys
