@@ -243,11 +243,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/elvisbrevi/Code/games/sudoku/monogame-test.csproj",
+      "projectUniqueName": "/Users/elvisbrevi/Code/games/sudoku copy/monogame-test.csproj",
       "projectName": "monogame-test",
-      "projectPath": "/Users/elvisbrevi/Code/games/sudoku/monogame-test.csproj",
+      "projectPath": "/Users/elvisbrevi/Code/games/sudoku copy/monogame-test.csproj",
       "packagesPath": "/Users/elvisbrevi/.nuget/packages/",
-      "outputPath": "/Users/elvisbrevi/Code/games/sudoku/obj/",
+      "outputPath": "/Users/elvisbrevi/Code/games/sudoku copy/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/elvisbrevi/.nuget/NuGet/NuGet.Config"
