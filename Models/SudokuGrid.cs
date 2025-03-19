@@ -229,8 +229,9 @@ namespace monogame_test.Models
         // Check if the puzzle is solved
         public bool IsSolved()
         {
-            // We need to track if the player has actually filled in cells
-            bool playerHasMadeEntries = false;
+            // Count how many cells the player has actually modified
+            int playerModifiedCount = 0;
+            int nonRevealedCount = 0;
             
             for (int row = 0; row < _gridSize; row++)
             {
@@ -242,28 +243,33 @@ namespace monogame_test.Models
                         continue;
                     }
                     
-                    // Check if player filled this cell
-                    if (_grid[row, col] != 0)
+                    // Count non-revealed cells
+                    nonRevealedCount++;
+                    
+                    // Check if player modified this cell
+                    if (_playerModified[row, col])
                     {
-                        playerHasMadeEntries = true;
+                        playerModifiedCount++;
                         
-                        // If the value isn't valid, puzzle isn't solved
-                        if (!IsValidCell(row, col))
+                        // If the cell is empty or has an invalid value, puzzle isn't solved
+                        if (_grid[row, col] == 0 || !IsValidCell(row, col))
                         {
                             return false;
                         }
                     }
                     else
                     {
-                        // Empty non-revealed cell means puzzle isn't complete
+                        // Non-modified non-revealed cell means puzzle isn't complete
                         return false;
                     }
                 }
             }
             
-            // The puzzle is solved if the player has filled in at least one cell
-            // and all filled cells are valid
-            return playerHasMadeEntries;
+            // The puzzle is solved if:
+            // 1. There are non-revealed cells to solve
+            // 2. The player has modified all non-revealed cells
+            // 3. All player modifications are valid
+            return nonRevealedCount > 0 && playerModifiedCount == nonRevealedCount;
         }
 
         // Check if a cell's value is valid in the current grid
