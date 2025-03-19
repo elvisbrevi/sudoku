@@ -289,7 +289,7 @@ namespace monogame_test
             if (_sudokuGrid.IsSolved())
             {
                 _puzzleSolved = true;
-                //_gameStateManager.ChangeState(GameStateType.GameOver);
+                _gameStateManager.ChangeState(GameStateType.GameOver);
                 return;
             }
 
@@ -521,8 +521,12 @@ namespace monogame_test
                 // Draw cell border
                 DrawRectangle(cellRect, GridLineColor, 1);
                 
-                // Draw cell value if not empty
-                if (_sudokuGrid.Grid[row, col] != 0)
+                // Only draw cell values that should be visible to the player:
+                // 1. Revealed cells (initial clues) 
+                // 2. Cells modified by the player
+                // 3. All cells if the puzzle is solved
+                if (_sudokuGrid.Grid[row, col] != 0 && 
+                    (_sudokuGrid.Revealed[row, col] || _sudokuGrid.PlayerModified[row, col] || _puzzleSolved))
                 {
                     string cellText = _gameConfig.Representation.GetRepresentation(_sudokuGrid.Grid[row, col]);
                     Vector2 textSize = _font.MeasureString(cellText);

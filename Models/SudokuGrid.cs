@@ -7,12 +7,14 @@ namespace monogame_test.Models
     {
         private int[,] _grid;
         private bool[,] _revealed;
+        private bool[,] _playerModified; // Track cells modified by the player
         private int _gridSize;
         private int _boxSize;
         private Random _random = new Random();
 
         public int[,] Grid => _grid;
         public bool[,] Revealed => _revealed;
+        public bool[,] PlayerModified => _playerModified; // Public accessor for player-modified cells
         public int GridSize => _gridSize;
         public int BoxSize => _boxSize;
 
@@ -22,6 +24,7 @@ namespace monogame_test.Models
             _gridSize = boxSize * boxSize;
             _grid = new int[_gridSize, _gridSize];
             _revealed = new bool[_gridSize, _gridSize];
+            _playerModified = new bool[_gridSize, _gridSize]; // Initialize player modifications array
             GenerateFullGrid();
         }
 
@@ -82,12 +85,13 @@ namespace monogame_test.Models
         // Create a playable puzzle by removing some numbers
         public void CreatePuzzle(int difficulty)
         {
-            // First, mark all cells as hidden
+            // First, mark all cells as hidden and not modified by player
             for (int row = 0; row < _gridSize; row++)
             {
                 for (int col = 0; col < _gridSize; col++)
                 {
                     _revealed[row, col] = false;
+                    _playerModified[row, col] = false;
                 }
             }
 
@@ -208,12 +212,14 @@ namespace monogame_test.Models
             if (num == 0) // Erasing a number
             {
                 _grid[row, col] = 0;
+                _playerModified[row, col] = true; // Keep this marked as modified by player
                 return true;
             }
 
             if (IsValidPlacement(row, col, num))
             {
                 _grid[row, col] = num;
+                _playerModified[row, col] = true; // Mark as modified by player
                 return true;
             }
 
