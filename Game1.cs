@@ -35,7 +35,8 @@ namespace monogame_test
         private const int CellSize = 40;
         private const int GridMargin = 50;
         private readonly Color GridLineColor = Color.Black;
-        private readonly Color SelectedCellColor = new Color(173, 216, 230, 150); // Light blue
+        private readonly Color SelectedCellColor = new Color(173, 216, 230, 200); // Light blue with more opacity
+        private readonly Color SelectedCellBorderColor = Color.Blue; // Bright blue for selected cell border
         private readonly Color OriginalCellColor = new Color(211, 211, 211, 150);  // Light gray
         private readonly Color CorrectCellColor = new Color(144, 238, 144, 150);   // Light green
         private readonly Color IncorrectCellColor = new Color(255, 182, 193, 150); // Light red
@@ -652,7 +653,16 @@ namespace monogame_test
                 _spriteBatch.Draw(new Texture2D(GraphicsDevice, 1, 1), cellRect, cellBackground);
                 
                 // Draw cell border
-                DrawRectangle(cellRect, GridLineColor, 1);
+                if (row == _selectedRow && col == _selectedCol)
+                {
+                    // Draw a thicker, colored border for the selected cell
+                    DrawRectangle(cellRect, SelectedCellBorderColor, 3);
+                }
+                else
+                {
+                    // Normal border for non-selected cells
+                    DrawRectangle(cellRect, GridLineColor, 1);
+                }
                 
                 // Only draw cell values that should be visible to the player:
                 // 1. Revealed cells (initial clues) 
