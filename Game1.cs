@@ -355,109 +355,179 @@ namespace monogame_test
         // Check if arrow keys are pressed to navigate between cells
         if (keyboardState.IsKeyDown(Keys.Left) && !_prevKeyboardState.IsKeyDown(Keys.Left))
         {
-            // Move selection left, wrap around to the end of the previous row if needed
+            // Move selection left, wrap around to the end of the same row if at left edge
             if (_selectedCol > 0)
             {
                 _selectedCol--;
             }
-            else if (_selectedRow > 0)
+            else
             {
-                _selectedRow--;
+                // Wrap to the rightmost column of the same row
                 _selectedCol = _sudokuGrid.GridSize - 1;
             }
             
             // Skip revealed cells (original clues)
-            while (_selectedRow >= 0 && _selectedCol >= 0 && _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            int startRow = _selectedRow;
+            int startCol = _selectedCol;
+            int attempts = 0;
+            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
+            
+            while (_selectedRow >= 0 && _selectedCol >= 0 && 
+                  _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
+                  attempts < maxAttempts)
             {
-                // Continue moving left or to previous row if needed
+                attempts++;
+                
+                // Continue moving left, wrapping if needed
                 if (_selectedCol > 0)
                 {
                     _selectedCol--;
                 }
-                else if (_selectedRow > 0)
-                {
-                    _selectedRow--;
-                    _selectedCol = _sudokuGrid.GridSize - 1;
-                }
                 else
                 {
-                    break; // Can't move anymore
+                    // Wrap to the rightmost column of the same row
+                    _selectedCol = _sudokuGrid.GridSize - 1;
+                }
+                
+                // If we've checked every cell in this row and all are revealed,
+                // the selection will end up back where it started
+                if (_selectedRow == startRow && _selectedCol == startCol)
+                {
+                    break; // No selectable cells in this row
                 }
             }
         }
         else if (keyboardState.IsKeyDown(Keys.Right) && !_prevKeyboardState.IsKeyDown(Keys.Right))
         {
-            // Move selection right, wrap around to the start of the next row if needed
+            // Move selection right, wrap around to the start of the same row if at right edge
             if (_selectedCol < _sudokuGrid.GridSize - 1)
             {
                 _selectedCol++;
             }
-            else if (_selectedRow < _sudokuGrid.GridSize - 1)
+            else
             {
-                _selectedRow++;
+                // Wrap to the leftmost column of the same row
                 _selectedCol = 0;
             }
             
             // Skip revealed cells (original clues)
+            int startRow = _selectedRow;
+            int startCol = _selectedCol;
+            int attempts = 0;
+            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
+            
             while (_selectedRow >= 0 && _selectedCol >= 0 && 
                    _selectedRow < _sudokuGrid.GridSize && _selectedCol < _sudokuGrid.GridSize && 
-                   _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+                   _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
+                   attempts < maxAttempts)
             {
-                // Continue moving right or to next row if needed
+                attempts++;
+                
+                // Continue moving right, wrapping if needed
                 if (_selectedCol < _sudokuGrid.GridSize - 1)
                 {
                     _selectedCol++;
                 }
-                else if (_selectedRow < _sudokuGrid.GridSize - 1)
-                {
-                    _selectedRow++;
-                    _selectedCol = 0;
-                }
                 else
                 {
-                    break; // Can't move anymore
+                    // Wrap to the leftmost column of the same row
+                    _selectedCol = 0;
+                }
+                
+                // If we've checked every cell in this row and all are revealed,
+                // the selection will end up back where it started
+                if (_selectedRow == startRow && _selectedCol == startCol)
+                {
+                    break; // No selectable cells in this row
                 }
             }
         }
         else if (keyboardState.IsKeyDown(Keys.Up) && !_prevKeyboardState.IsKeyDown(Keys.Up))
         {
-            // Move selection up, stay in the same column
+            // Move selection up, wrap around to the bottom of the same column if at top edge
             if (_selectedRow > 0)
             {
                 _selectedRow--;
             }
+            else
+            {
+                // Wrap to the bottom row of the same column
+                _selectedRow = _sudokuGrid.GridSize - 1;
+            }
             
             // Skip revealed cells (original clues)
-            while (_selectedRow >= 0 && _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            int startRow = _selectedRow;
+            int startCol = _selectedCol;
+            int attempts = 0;
+            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
+            
+            while (_selectedRow >= 0 && _selectedCol >= 0 && 
+                  _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
+                  attempts < maxAttempts)
             {
+                attempts++;
+                
+                // Continue moving up, wrapping if needed
                 if (_selectedRow > 0)
                 {
                     _selectedRow--;
                 }
                 else
                 {
-                    break; // Can't move anymore
+                    // Wrap to the bottom row of the same column
+                    _selectedRow = _sudokuGrid.GridSize - 1;
+                }
+                
+                // If we've checked every cell in this column and all are revealed,
+                // the selection will end up back where it started
+                if (_selectedRow == startRow && _selectedCol == startCol)
+                {
+                    break; // No selectable cells in this column
                 }
             }
         }
         else if (keyboardState.IsKeyDown(Keys.Down) && !_prevKeyboardState.IsKeyDown(Keys.Down))
         {
-            // Move selection down, stay in the same column
+            // Move selection down, wrap around to the top of the same column if at bottom edge
             if (_selectedRow < _sudokuGrid.GridSize - 1)
             {
                 _selectedRow++;
             }
+            else
+            {
+                // Wrap to the top row of the same column
+                _selectedRow = 0;
+            }
             
             // Skip revealed cells (original clues)
-            while (_selectedRow < _sudokuGrid.GridSize && _sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            int startRow = _selectedRow;
+            int startCol = _selectedCol;
+            int attempts = 0;
+            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
+            
+            while (_selectedRow >= 0 && _selectedCol >= 0 && 
+                  _selectedRow < _sudokuGrid.GridSize && 
+                  _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
+                  attempts < maxAttempts)
             {
+                attempts++;
+                
+                // Continue moving down, wrapping if needed
                 if (_selectedRow < _sudokuGrid.GridSize - 1)
                 {
                     _selectedRow++;
                 }
                 else
                 {
-                    break; // Can't move anymore
+                    // Wrap to the top row of the same column
+                    _selectedRow = 0;
+                }
+                
+                // If we've checked every cell in this column and all are revealed,
+                // the selection will end up back where it started
+                if (_selectedRow == startRow && _selectedCol == startCol)
+                {
+                    break; // No selectable cells in this column
                 }
             }
         }
