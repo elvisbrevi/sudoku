@@ -192,8 +192,8 @@ namespace monogame_test.Models
             
             spriteBatch.DrawString(font, SelectedOption, textPosition, Color.Black);
             
-            // Draw dropdown arrow
-            string arrow = _isOpen ? "▲" : "▼";
+            // Draw dropdown arrow (usando caracteres ASCII simples)
+            string arrow = _isOpen ? "^" : "v";
             Vector2 arrowSize = font.MeasureString(arrow);
             Vector2 arrowPosition = new Vector2(
                 Bounds.X + Bounds.Width - arrowSize.X - 10,

@@ -29,6 +29,7 @@ namespace monogame_test
         private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
         private List<UIComponent> _optionsComponents = new List<UIComponent>();
         private List<UIComponent> _gameplayComponents = new List<UIComponent>();
+    private ValueSelectionPanel _valueSelectionPanel;
         private List<UIComponent> _gameOverComponents = new List<UIComponent>();
         
         // Constants for drawing
@@ -113,7 +114,11 @@ namespace monogame_test
         
         var sizeOptions = new string[] { "4x4 (2x2)", "9x9 (3x3)" };
         var sizeDropdown = new Dropdown(new Rectangle(400, 150, 200, 30), sizeOptions, _gameConfig.Size - 2);
-        sizeDropdown.OnSelectionChanged += (index) => _gameConfig.Size = index + 2;
+        sizeDropdown.OnSelectionChanged += (index) => {
+            _gameConfig.Size = index + 2;
+            // Actualizar el panel si ya existe
+            UpdateValueSelectionPanel();
+        };
         _optionsComponents.Add(sizeDropdown);
 
         // Difficulty Dropdown
@@ -135,7 +140,11 @@ namespace monogame_test
         
         var styleOptions = new string[] { "Numbers", "Emojis", "Letters", "Colors" };
         var styleDropdown = new Dropdown(new Rectangle(400, 250, 200, 30), styleOptions, (int)_gameConfig.RepresentationType);
-        styleDropdown.OnSelectionChanged += (index) => _gameConfig.RepresentationType = (RepresentationFactory.RepresentationType)index;
+        styleDropdown.OnSelectionChanged += (index) => {
+            _gameConfig.RepresentationType = (RepresentationFactory.RepresentationType)index;
+            // Actualizar el panel si ya existe
+            UpdateValueSelectionPanel();
+        };
         _optionsComponents.Add(styleDropdown);
 
         // Apply Button
@@ -181,6 +190,28 @@ namespace monogame_test
         var menuButton = new Button(new Rectangle(650, 220, 120, 40), "Main Menu");
         menuButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
         _gameplayComponents.Add(menuButton);
+
+        // Calcular tamaño y posición del panel de selección de valores
+        int panelWidth = 180;
+        int panelHeight = 180;
+        int panelX = 650;  // Alineado con los botones
+        int panelY = 280;  // Debajo de los botones
+        
+        // Crear panel de selección de valores
+        _valueSelectionPanel = new ValueSelectionPanel(
+            new Rectangle(panelX, panelY, panelWidth, panelHeight),
+            GameConfig.Instance.GridSize,
+            GameConfig.Instance.Representation);
+        
+        // Manejar el evento de selección de valor
+        _valueSelectionPanel.OnValueSelected += (value) => {
+            if (_selectedRow >= 0 && _selectedCol >= 0 && !_sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            {
+                _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, value);
+            }
+        };
+        
+        _gameplayComponents.Add(_valueSelectionPanel);
     }
 
     private void CreateGameOverUI()
@@ -210,6 +241,43 @@ namespace monogame_test
         _selectedCol = -1;
         _puzzleSolved = false;
         _gameInitialized = true;
+        
+        // Actualizar el panel de selecciu00f3n de valores con la configuracion actual
+        UpdateValueSelectionPanel();
+    }
+    
+    private void UpdateValueSelectionPanel()
+    {
+        // Solo actualizar si estamos en modo de juego y el panel ya existe
+        if (_valueSelectionPanel != null && _gameStateManager.CurrentState == GameStateType.Playing)
+        {
+            // Mantener la misma posición y tamaño, pero actualizar con los nuevos valores
+            Rectangle bounds = _valueSelectionPanel.Bounds;
+            
+            // Crear un nuevo panel con la configuración actual
+            _valueSelectionPanel = new ValueSelectionPanel(
+                bounds,
+                _gameConfig.GridSize,
+                _gameConfig.Representation);
+            
+            // Restaurar el manejador de eventos
+            _valueSelectionPanel.OnValueSelected += (value) => {
+                if (_selectedRow >= 0 && _selectedCol >= 0 && !_sudokuGrid.Revealed[_selectedRow, _selectedCol])
+                {
+                    _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, value);
+                }
+            };
+            
+            // Reemplazar el panel antiguo en la lista de componentes
+            for (int i = 0; i < _gameplayComponents.Count; i++)
+            {
+                if (_gameplayComponents[i] is ValueSelectionPanel)
+                {
+                    _gameplayComponents[i] = _valueSelectionPanel;
+                    break;
+                }
+            }
+        }
     }
 
     protected override void Update(GameTime gameTime)
