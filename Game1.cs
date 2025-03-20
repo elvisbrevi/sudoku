@@ -353,198 +353,98 @@ namespace monogame_test
     private void HandleArrowKeyNavigation(KeyboardState keyboardState)
     {
         int gridSize = _sudokuGrid.GridSize;
-        int originalRow = _selectedRow;
-        int originalCol = _selectedCol;
-        bool moved = false;
+        int moveDirection = -1; // 0=left, 1=right, 2=up, 3=down, -1=none
         
-        // Check which arrow key was pressed - optimized for speed
+        // Check which arrow key was pressed - very optimized for speed
         if (keyboardState.IsKeyDown(Keys.Left) && !_prevKeyboardState.IsKeyDown(Keys.Left))
-        {
-            // Move left with wrapping
-            _selectedCol = (_selectedCol > 0) ? _selectedCol - 1 : gridSize - 1;
-            moved = true;
-        }
+            moveDirection = 0;
         else if (keyboardState.IsKeyDown(Keys.Right) && !_prevKeyboardState.IsKeyDown(Keys.Right))
-        {
-            // Move right with wrapping
-            _selectedCol = (_selectedCol < gridSize - 1) ? _selectedCol + 1 : 0;
-            moved = true;
-        }
+            moveDirection = 1;
         else if (keyboardState.IsKeyDown(Keys.Up) && !_prevKeyboardState.IsKeyDown(Keys.Up))
-        {
-            // Move up with wrapping
-            _selectedRow = (_selectedRow > 0) ? _selectedRow - 1 : gridSize - 1;
-            moved = true;
-        }
+            moveDirection = 2;
         else if (keyboardState.IsKeyDown(Keys.Down) && !_prevKeyboardState.IsKeyDown(Keys.Down))
-        {
-            // Move down with wrapping
-            _selectedRow = (_selectedRow < gridSize - 1) ? _selectedRow + 1 : 0;
-            moved = true;
-        }
+            moveDirection = 3;
         
-        // Skip revealed cells if we moved
-        if (moved)
-        {
-            // If the new cell is revealed, find the next non-revealed cell
-            if (_sudokuGrid.Revealed[_selectedRow, _selectedCol])
-            {
-                FindNextSelectableCell(originalRow, originalCol);
-            }
-        }
+        // If no movement, exit early
+        if (moveDirection == -1) return;
         
-        // If no cell is selected yet, initialize selection
+        // Initialize selection if needed
         if (_selectedRow < 0 || _selectedCol < 0)
         {
             InitializeSelection();
+            return;
+        }
+
+        // Perform direct movement based on direction
+        switch (moveDirection)
+        {
+            case 0: // Left
+                _selectedCol = (_selectedCol > 0) ? _selectedCol - 1 : gridSize - 1;
+                break;
+            case 1: // Right
+                _selectedCol = (_selectedCol < gridSize - 1) ? _selectedCol + 1 : 0;
+                break;
+            case 2: // Up
+                _selectedRow = (_selectedRow > 0) ? _selectedRow - 1 : gridSize - 1;
+                break;
+            case 3: // Down
+                _selectedRow = (_selectedRow < gridSize - 1) ? _selectedRow + 1 : 0;
+                break;
+        }
+        
+        // If we land on a revealed cell, find next non-revealed cell
+        if (_sudokuGrid.Revealed[_selectedRow, _selectedCol])
+        {
+            // Skip revealed cells in the same direction
+            FindNextNonRevealedCell(moveDirection, gridSize);
         }
     }
     
-    private void FindNextSelectableCell(int originalRow, int originalCol)
+    // Extremadamente optimizado para velocidad de navegaciu00f3n
+    private void FindNextNonRevealedCell(int moveDirection, int gridSize)
     {
-        int gridSize = _sudokuGrid.GridSize;
-        int direction = 0; // 0 for horizontal, 1 for vertical
-        int directionSign = 0; // 1 for right/down, -1 for left/up
+        int startRow = _selectedRow;
+        int startCol = _selectedCol;
         
-        // Get the starting point to search from (current position after initial movement)
-        int currentRow = _selectedRow;
-        int currentCol = _selectedCol;
-        
-        // Determine direction and sign based on which key was pressed
-        if (currentRow == originalRow) // Moving horizontally
+        // Continuar moviendo en la misma direcciu00f3n hasta encontrar una celda no revelada o dar la vuelta completa
+        do 
         {
-            direction = 0;
-            directionSign = (currentCol > originalCol) ? 1 : -1;
-        }
-        else // Moving vertically
-        {
-            direction = 1;
-            directionSign = (currentRow > originalRow) ? 1 : -1;
-        }
-        
-        // Save the starting position for loop detection
-        int startRow = currentRow;
-        int startCol = currentCol;
-        bool foundCell = false;
-        
-        // Search for a non-revealed cell in the current direction, wrapping around boundaries if needed
-        // We'll make a complete loop through all possible positions in this direction
-        do
-        {
-            // Check if current cell is selectable (not revealed)
-            if (!_sudokuGrid.Revealed[currentRow, currentCol])
+            // Mover en la direcciu00f3n indicada con envoltura (wrapping)
+            switch (moveDirection)
             {
-                _selectedRow = currentRow;
-                _selectedCol = currentCol;
-                foundCell = true;
-                break;
+                case 0: // Izquierda
+                    _selectedCol = (_selectedCol > 0) ? _selectedCol - 1 : gridSize - 1;
+                    break;
+                case 1: // Derecha
+                    _selectedCol = (_selectedCol < gridSize - 1) ? _selectedCol + 1 : 0;
+                    break;
+                case 2: // Arriba
+                    _selectedRow = (_selectedRow > 0) ? _selectedRow - 1 : gridSize - 1;
+                    break;
+                case 3: // Abajo
+                    _selectedRow = (_selectedRow < gridSize - 1) ? _selectedRow + 1 : 0;
+                    break;
             }
             
-            // Move to next cell in current direction with wrapping
-            if (direction == 0) // Horizontal movement
+            // Verificar si encontramos una celda no revelada
+            if (!_sudokuGrid.Revealed[_selectedRow, _selectedCol])
             {
-                if (directionSign == 1) // Right
-                {
-                    currentCol = (currentCol < gridSize - 1) ? currentCol + 1 : 0;
-                }
-                else // Left
-                {
-                    currentCol = (currentCol > 0) ? currentCol - 1 : gridSize - 1;
-                }
-            }
-            else // Vertical movement
-            {
-                if (directionSign == 1) // Down
-                {
-                    currentRow = (currentRow < gridSize - 1) ? currentRow + 1 : 0;
-                }
-                else // Up
-                {
-                    currentRow = (currentRow > 0) ? currentRow - 1 : gridSize - 1;
-                }
-            }
-        } 
-        // Continue until we've checked all cells in this direction
-        while ((currentRow != startRow || currentCol != startCol) && !foundCell);
-        
-        // If we couldn't find any selectable cell in the current direction,
-        // search through the entire grid as a fallback
-        if (!foundCell)
-        {
-            // First check whether there are any non-revealed cells at all
-            bool hasSelectableCells = false;
-            for (int r = 0; r < gridSize && !hasSelectableCells; r++)
-            {
-                for (int c = 0; c < gridSize && !hasSelectableCells; c++)
-                {
-                    if (!_sudokuGrid.Revealed[r, c])
-                    {
-                        hasSelectableCells = true;
-                    }
-                }
+                return; // Encontramos una celda vu00e1lida, salir
             }
             
-            // If there are selectable cells, find one
-            if (hasSelectableCells)
+            // Verificar si hemos dado una vuelta completa
+        } while (_selectedRow != startRow || _selectedCol != startCol);
+        
+        // Si no encontramos ninguna celda no revelada en la direcciu00f3n actual, buscar en todo el tablero
+        for (int row = 0; row < gridSize; row++)
+        {
+            for (int col = 0; col < gridSize; col++)
             {
-                // Do full grid search - prioritize cells in same row/column first
-                if (direction == 0) // For horizontal movement, search the same row first
+                if (!_sudokuGrid.Revealed[row, col])
                 {
-                    // Search current row
-                    for (int c = 0; c < gridSize; c++)
-                    {
-                        if (!_sudokuGrid.Revealed[currentRow, c])
-                        {
-                            _selectedRow = currentRow;
-                            _selectedCol = c;
-                            return;
-                        }
-                    }
-                    
-                    // Then search other rows
-                    for (int r = 0; r < gridSize; r++)
-                    {
-                        if (r == currentRow) continue; // Skip current row as we already checked it
-                        
-                        for (int c = 0; c < gridSize; c++)
-                        {
-                            if (!_sudokuGrid.Revealed[r, c])
-                            {
-                                _selectedRow = r;
-                                _selectedCol = c;
-                                return;
-                            }
-                        }
-                    }
-                }
-                else // For vertical movement, search the same column first
-                {
-                    // Search current column
-                    for (int r = 0; r < gridSize; r++)
-                    {
-                        if (!_sudokuGrid.Revealed[r, currentCol])
-                        {
-                            _selectedRow = r;
-                            _selectedCol = currentCol;
-                            return;
-                        }
-                    }
-                    
-                    // Then search other columns
-                    for (int c = 0; c < gridSize; c++)
-                    {
-                        if (c == currentCol) continue; // Skip current column as we already checked it
-                        
-                        for (int r = 0; r < gridSize; r++)
-                        {
-                            if (!_sudokuGrid.Revealed[r, c])
-                            {
-                                _selectedRow = r;
-                                _selectedCol = c;
-                                return;
-                            }
-                        }
-                    }
+                    _selectedRow = row;
+                    _selectedCol = col;
+                    return;
                 }
             }
         }
