@@ -352,187 +352,207 @@ namespace monogame_test
 
     private void HandleArrowKeyNavigation(KeyboardState keyboardState)
     {
-        // Check if arrow keys are pressed to navigate between cells
+        int gridSize = _sudokuGrid.GridSize;
+        int originalRow = _selectedRow;
+        int originalCol = _selectedCol;
+        bool moved = false;
+        
+        // Check which arrow key was pressed - optimized for speed
         if (keyboardState.IsKeyDown(Keys.Left) && !_prevKeyboardState.IsKeyDown(Keys.Left))
         {
-            // Move selection left, wrap around to the end of the same row if at left edge
-            if (_selectedCol > 0)
-            {
-                _selectedCol--;
-            }
-            else
-            {
-                // Wrap to the rightmost column of the same row
-                _selectedCol = _sudokuGrid.GridSize - 1;
-            }
-            
-            // Skip revealed cells (original clues)
-            int startRow = _selectedRow;
-            int startCol = _selectedCol;
-            int attempts = 0;
-            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
-            
-            while (_selectedRow >= 0 && _selectedCol >= 0 && 
-                  _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
-                  attempts < maxAttempts)
-            {
-                attempts++;
-                
-                // Continue moving left, wrapping if needed
-                if (_selectedCol > 0)
-                {
-                    _selectedCol--;
-                }
-                else
-                {
-                    // Wrap to the rightmost column of the same row
-                    _selectedCol = _sudokuGrid.GridSize - 1;
-                }
-                
-                // If we've checked every cell in this row and all are revealed,
-                // the selection will end up back where it started
-                if (_selectedRow == startRow && _selectedCol == startCol)
-                {
-                    break; // No selectable cells in this row
-                }
-            }
+            // Move left with wrapping
+            _selectedCol = (_selectedCol > 0) ? _selectedCol - 1 : gridSize - 1;
+            moved = true;
         }
         else if (keyboardState.IsKeyDown(Keys.Right) && !_prevKeyboardState.IsKeyDown(Keys.Right))
         {
-            // Move selection right, wrap around to the start of the same row if at right edge
-            if (_selectedCol < _sudokuGrid.GridSize - 1)
-            {
-                _selectedCol++;
-            }
-            else
-            {
-                // Wrap to the leftmost column of the same row
-                _selectedCol = 0;
-            }
-            
-            // Skip revealed cells (original clues)
-            int startRow = _selectedRow;
-            int startCol = _selectedCol;
-            int attempts = 0;
-            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
-            
-            while (_selectedRow >= 0 && _selectedCol >= 0 && 
-                   _selectedRow < _sudokuGrid.GridSize && _selectedCol < _sudokuGrid.GridSize && 
-                   _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
-                   attempts < maxAttempts)
-            {
-                attempts++;
-                
-                // Continue moving right, wrapping if needed
-                if (_selectedCol < _sudokuGrid.GridSize - 1)
-                {
-                    _selectedCol++;
-                }
-                else
-                {
-                    // Wrap to the leftmost column of the same row
-                    _selectedCol = 0;
-                }
-                
-                // If we've checked every cell in this row and all are revealed,
-                // the selection will end up back where it started
-                if (_selectedRow == startRow && _selectedCol == startCol)
-                {
-                    break; // No selectable cells in this row
-                }
-            }
+            // Move right with wrapping
+            _selectedCol = (_selectedCol < gridSize - 1) ? _selectedCol + 1 : 0;
+            moved = true;
         }
         else if (keyboardState.IsKeyDown(Keys.Up) && !_prevKeyboardState.IsKeyDown(Keys.Up))
         {
-            // Move selection up, wrap around to the bottom of the same column if at top edge
-            if (_selectedRow > 0)
-            {
-                _selectedRow--;
-            }
-            else
-            {
-                // Wrap to the bottom row of the same column
-                _selectedRow = _sudokuGrid.GridSize - 1;
-            }
-            
-            // Skip revealed cells (original clues)
-            int startRow = _selectedRow;
-            int startCol = _selectedCol;
-            int attempts = 0;
-            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
-            
-            while (_selectedRow >= 0 && _selectedCol >= 0 && 
-                  _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
-                  attempts < maxAttempts)
-            {
-                attempts++;
-                
-                // Continue moving up, wrapping if needed
-                if (_selectedRow > 0)
-                {
-                    _selectedRow--;
-                }
-                else
-                {
-                    // Wrap to the bottom row of the same column
-                    _selectedRow = _sudokuGrid.GridSize - 1;
-                }
-                
-                // If we've checked every cell in this column and all are revealed,
-                // the selection will end up back where it started
-                if (_selectedRow == startRow && _selectedCol == startCol)
-                {
-                    break; // No selectable cells in this column
-                }
-            }
+            // Move up with wrapping
+            _selectedRow = (_selectedRow > 0) ? _selectedRow - 1 : gridSize - 1;
+            moved = true;
         }
         else if (keyboardState.IsKeyDown(Keys.Down) && !_prevKeyboardState.IsKeyDown(Keys.Down))
         {
-            // Move selection down, wrap around to the top of the same column if at bottom edge
-            if (_selectedRow < _sudokuGrid.GridSize - 1)
+            // Move down with wrapping
+            _selectedRow = (_selectedRow < gridSize - 1) ? _selectedRow + 1 : 0;
+            moved = true;
+        }
+        
+        // Skip revealed cells if we moved
+        if (moved)
+        {
+            // If the new cell is revealed, find the next non-revealed cell
+            if (_sudokuGrid.Revealed[_selectedRow, _selectedCol])
             {
-                _selectedRow++;
-            }
-            else
-            {
-                // Wrap to the top row of the same column
-                _selectedRow = 0;
-            }
-            
-            // Skip revealed cells (original clues)
-            int startRow = _selectedRow;
-            int startCol = _selectedCol;
-            int attempts = 0;
-            int maxAttempts = _sudokuGrid.GridSize * _sudokuGrid.GridSize; // Prevent infinite loops
-            
-            while (_selectedRow >= 0 && _selectedCol >= 0 && 
-                  _selectedRow < _sudokuGrid.GridSize && 
-                  _sudokuGrid.Revealed[_selectedRow, _selectedCol] && 
-                  attempts < maxAttempts)
-            {
-                attempts++;
-                
-                // Continue moving down, wrapping if needed
-                if (_selectedRow < _sudokuGrid.GridSize - 1)
-                {
-                    _selectedRow++;
-                }
-                else
-                {
-                    // Wrap to the top row of the same column
-                    _selectedRow = 0;
-                }
-                
-                // If we've checked every cell in this column and all are revealed,
-                // the selection will end up back where it started
-                if (_selectedRow == startRow && _selectedCol == startCol)
-                {
-                    break; // No selectable cells in this column
-                }
+                FindNextSelectableCell(originalRow, originalCol);
             }
         }
         
-        // If no cell is selected yet, select the first non-revealed cell
+        // If no cell is selected yet, initialize selection
+        if (_selectedRow < 0 || _selectedCol < 0)
+        {
+            InitializeSelection();
+        }
+    }
+    
+    private void FindNextSelectableCell(int originalRow, int originalCol)
+    {
+        int gridSize = _sudokuGrid.GridSize;
+        int direction = 0; // 0 for horizontal, 1 for vertical
+        int directionSign = 0; // 1 for right/down, -1 for left/up
+        
+        // Get the starting point to search from (current position after initial movement)
+        int currentRow = _selectedRow;
+        int currentCol = _selectedCol;
+        
+        // Determine direction and sign based on which key was pressed
+        if (currentRow == originalRow) // Moving horizontally
+        {
+            direction = 0;
+            directionSign = (currentCol > originalCol) ? 1 : -1;
+        }
+        else // Moving vertically
+        {
+            direction = 1;
+            directionSign = (currentRow > originalRow) ? 1 : -1;
+        }
+        
+        // Save the starting position for loop detection
+        int startRow = currentRow;
+        int startCol = currentCol;
+        bool foundCell = false;
+        
+        // Search for a non-revealed cell in the current direction, wrapping around boundaries if needed
+        // We'll make a complete loop through all possible positions in this direction
+        do
+        {
+            // Check if current cell is selectable (not revealed)
+            if (!_sudokuGrid.Revealed[currentRow, currentCol])
+            {
+                _selectedRow = currentRow;
+                _selectedCol = currentCol;
+                foundCell = true;
+                break;
+            }
+            
+            // Move to next cell in current direction with wrapping
+            if (direction == 0) // Horizontal movement
+            {
+                if (directionSign == 1) // Right
+                {
+                    currentCol = (currentCol < gridSize - 1) ? currentCol + 1 : 0;
+                }
+                else // Left
+                {
+                    currentCol = (currentCol > 0) ? currentCol - 1 : gridSize - 1;
+                }
+            }
+            else // Vertical movement
+            {
+                if (directionSign == 1) // Down
+                {
+                    currentRow = (currentRow < gridSize - 1) ? currentRow + 1 : 0;
+                }
+                else // Up
+                {
+                    currentRow = (currentRow > 0) ? currentRow - 1 : gridSize - 1;
+                }
+            }
+        } 
+        // Continue until we've checked all cells in this direction
+        while ((currentRow != startRow || currentCol != startCol) && !foundCell);
+        
+        // If we couldn't find any selectable cell in the current direction,
+        // search through the entire grid as a fallback
+        if (!foundCell)
+        {
+            // First check whether there are any non-revealed cells at all
+            bool hasSelectableCells = false;
+            for (int r = 0; r < gridSize && !hasSelectableCells; r++)
+            {
+                for (int c = 0; c < gridSize && !hasSelectableCells; c++)
+                {
+                    if (!_sudokuGrid.Revealed[r, c])
+                    {
+                        hasSelectableCells = true;
+                    }
+                }
+            }
+            
+            // If there are selectable cells, find one
+            if (hasSelectableCells)
+            {
+                // Do full grid search - prioritize cells in same row/column first
+                if (direction == 0) // For horizontal movement, search the same row first
+                {
+                    // Search current row
+                    for (int c = 0; c < gridSize; c++)
+                    {
+                        if (!_sudokuGrid.Revealed[currentRow, c])
+                        {
+                            _selectedRow = currentRow;
+                            _selectedCol = c;
+                            return;
+                        }
+                    }
+                    
+                    // Then search other rows
+                    for (int r = 0; r < gridSize; r++)
+                    {
+                        if (r == currentRow) continue; // Skip current row as we already checked it
+                        
+                        for (int c = 0; c < gridSize; c++)
+                        {
+                            if (!_sudokuGrid.Revealed[r, c])
+                            {
+                                _selectedRow = r;
+                                _selectedCol = c;
+                                return;
+                            }
+                        }
+                    }
+                }
+                else // For vertical movement, search the same column first
+                {
+                    // Search current column
+                    for (int r = 0; r < gridSize; r++)
+                    {
+                        if (!_sudokuGrid.Revealed[r, currentCol])
+                        {
+                            _selectedRow = r;
+                            _selectedCol = currentCol;
+                            return;
+                        }
+                    }
+                    
+                    // Then search other columns
+                    for (int c = 0; c < gridSize; c++)
+                    {
+                        if (c == currentCol) continue; // Skip current column as we already checked it
+                        
+                        for (int r = 0; r < gridSize; r++)
+                        {
+                            if (!_sudokuGrid.Revealed[r, c])
+                            {
+                                _selectedRow = r;
+                                _selectedCol = c;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // If no cell is selected yet, select the first non-revealed cell
+    private void InitializeSelection()
+    {
         if (_selectedRow < 0 || _selectedCol < 0)
         {
             for (int row = 0; row < _sudokuGrid.GridSize; row++)

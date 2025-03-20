@@ -51,3 +51,5 @@ _ReSharper*/
 *.snupkg
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
+bin/Debug/net8.0/monogame-test.dll
+bin/Debug/net8.0/monogame-test.dll
