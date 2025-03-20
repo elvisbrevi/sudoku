@@ -139,11 +139,16 @@ namespace monogame_test.Models
         // Checks if placing a number at a specific position is valid
         public bool IsValidPlacement(int row, int col, int num)
         {
+            // Temporarily clear the current cell to not interfere with validation
+            int originalValue = _grid[row, col];
+            _grid[row, col] = 0;
+
             // Check row
             for (int c = 0; c < _gridSize; c++)
             {
                 if (_grid[row, c] == num)
                 {
+                    _grid[row, col] = originalValue; // Restore original value
                     return false;
                 }
             }
@@ -153,6 +158,7 @@ namespace monogame_test.Models
             {
                 if (_grid[r, col] == num)
                 {
+                    _grid[row, col] = originalValue; // Restore original value
                     return false;
                 }
             }
@@ -167,11 +173,14 @@ namespace monogame_test.Models
                 {
                     if (_grid[boxRow + r, boxCol + c] == num)
                     {
+                        _grid[row, col] = originalValue; // Restore original value
                         return false;
                     }
                 }
             }
-
+            
+            // Restore original value
+            _grid[row, col] = originalValue;
             return true;
         }
 
@@ -199,27 +208,43 @@ namespace monogame_test.Models
         // Place a number in the grid at the specified position
         public bool PlaceNumber(int row, int col, int num)
         {
+            // Validaciones básicas
+            if (row < 0 || row >= _gridSize || col < 0 || col >= _gridSize)
+            {
+                return false; // Fuera de límites
+            }
+
             if (_revealed[row, col])
             {
-                return false; // Can't modify revealed cells
+                return false; // No se pueden modificar celdas reveladas
             }
 
             if (num < 0 || num > _gridSize)
             {
-                return false; // Invalid number
+                return false; // Número inválido
             }
 
-            if (num == 0) // Erasing a number
+            // Borrar un número (siempre permitido)
+            if (num == 0)
             {
                 _grid[row, col] = 0;
-                _playerModified[row, col] = true; // Keep this marked as modified by player
+                _playerModified[row, col] = true; // Marcar como modificado por el jugador
                 return true;
             }
 
+            // Comprobar si el número es válido según las reglas del Sudoku
             if (IsValidPlacement(row, col, num))
             {
                 _grid[row, col] = num;
-                _playerModified[row, col] = true; // Mark as modified by player
+                _playerModified[row, col] = true; // Marcar como modificado por el jugador
+                return true;
+            }
+            else
+            {
+                // Permitir cualquier número aunque no cumpla las reglas del Sudoku
+                // para una experiencia de juego más fluida
+                _grid[row, col] = num;
+                _playerModified[row, col] = true;
                 return true;
             }
 

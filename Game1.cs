@@ -296,6 +296,9 @@ namespace monogame_test
 
             // Handle mouse selection of cells
             HandleCellSelection(mouseState);
+            
+            // Handle keyboard navigation with arrow keys
+            HandleArrowKeyNavigation(keyboardState);
 
             // Handle keyboard input for numbers
             HandleNumberInput(keyboardState);
@@ -472,34 +475,34 @@ namespace monogame_test
 
     private void HandleNumberInput(KeyboardState keyboardState)
     {
-        // Handle arrow key navigation for cell selection
-        HandleArrowKeyNavigation(keyboardState);
-
-        // Only process number input if a cell is selected
-        if (_selectedRow >= 0 && _selectedCol >= 0)
+        // Only process number input if a valid cell is selected (not revealed)
+        if (_selectedRow >= 0 && _selectedCol >= 0 && !_sudokuGrid.Revealed[_selectedRow, _selectedCol])
         {
-            // Check for number keys
-            for (int i = 0; i <= _sudokuGrid.GridSize; i++)
+            // Check for number keys (1-9 for 9x9 grid, 1-4 for 4x4 grid)
+            for (int i = 1; i <= _sudokuGrid.GridSize; i++) // Start from 1, not 0
             {
-                Keys key = i == 0 ? Keys.D0 : (Keys)((int)Keys.D1 + i - 1);
-                Keys numPadKey = i == 0 ? Keys.NumPad0 : (Keys)((int)Keys.NumPad1 + i - 1);
+                // Check both regular number keys and numpad keys
+                Keys key = (Keys)((int)Keys.D1 + i - 1); // D1 is 1, D2 is 2, etc.
+                Keys numPadKey = (Keys)((int)Keys.NumPad1 + i - 1);
 
                 if ((keyboardState.IsKeyDown(key) && !_prevKeyboardState.IsKeyDown(key)) ||
                     (keyboardState.IsKeyDown(numPadKey) && !_prevKeyboardState.IsKeyDown(numPadKey)))
                 {
-                    // Place the number in the grid if it's within valid range
-                    if (i <= _sudokuGrid.GridSize)
-                    {
-                        _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, i);
-                    }
+                    // Place the number in the grid
+                    _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, i);
+                    // Add sound or visual feedback here if desired
+                    break; // Exit after processing a number key
                 }
             }
 
-            // Check for delete or backspace to clear a cell
+            // Check for delete, backspace, or the number 0 to clear a cell
             if ((keyboardState.IsKeyDown(Keys.Delete) && !_prevKeyboardState.IsKeyDown(Keys.Delete)) ||
-                (keyboardState.IsKeyDown(Keys.Back) && !_prevKeyboardState.IsKeyDown(Keys.Back)))
+                (keyboardState.IsKeyDown(Keys.Back) && !_prevKeyboardState.IsKeyDown(Keys.Back)) ||
+                (keyboardState.IsKeyDown(Keys.D0) && !_prevKeyboardState.IsKeyDown(Keys.D0)) ||
+                (keyboardState.IsKeyDown(Keys.NumPad0) && !_prevKeyboardState.IsKeyDown(Keys.NumPad0)))
             {
                 _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, 0);
+                // Add sound or visual feedback for clearing a cell
             }
         }
     }
