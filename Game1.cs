@@ -338,7 +338,10 @@ namespace monogame_test
 
     private void UpdateOptions(MouseState mouseState)
     {
-        foreach (var component in _optionsComponents)
+        // Crear una copia de la lista para evitar errores si se modifica durante la iteración
+        var componentsCopy = new List<UIComponent>(_optionsComponents);
+        
+        foreach (var component in componentsCopy)
         {
             component.Update(mouseState, _prevMouseState);
         }
@@ -346,8 +349,11 @@ namespace monogame_test
 
     private void UpdateGameplay(MouseState mouseState, KeyboardState keyboardState)
     {
-        // Update UI components
-        foreach (var component in _gameplayComponents)
+        // Crear una copia de la lista para evitar errores si se modifica durante la iteración
+        var componentsCopy = new List<UIComponent>(_gameplayComponents);
+        
+        // Update UI components from copy
+        foreach (var component in componentsCopy)
         {
             component.Update(mouseState, _prevMouseState);
         }
@@ -623,10 +629,28 @@ namespace monogame_test
         Vector2 titleSize = _font.MeasureString(title);
         _spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 80), Color.DarkBlue, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
 
-        // Draw UI components
+        // Dibujar primero los fondos y los bordes de todos los componentes
         foreach (var component in _optionsComponents)
         {
-            component.Draw(_spriteBatch, _font);
+            if (component is Dropdown dropdown)
+            {
+                // Solo dibujamos el fondo y el borde del dropdown, no su contenido desplegado
+                dropdown.DrawBackground(_spriteBatch, _font);
+            }
+            else
+            {
+                // Componentes normales se dibujan completamente
+                component.Draw(_spriteBatch, _font);
+            }
+        }
+        
+        // Luego dibujamos el contenido de los dropdowns por encima de todo
+        foreach (var component in _optionsComponents)
+        {
+            if (component is Dropdown dropdown)
+            {
+                dropdown.DrawContent(_spriteBatch, _font);
+            }
         }
     }
 
@@ -637,7 +661,7 @@ namespace monogame_test
         // Draw grid
         DrawSudokuGrid();
         
-        // Draw UI components
+        // Dibujamos todos los componentes
         foreach (var component in _gameplayComponents)
         {
             component.Draw(_spriteBatch, _font);

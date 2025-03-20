@@ -89,6 +89,9 @@ namespace monogame_test.Models
         private bool _isOpen;
         private Rectangle[] _optionRects;
         public event Action<int> OnSelectionChanged;
+        
+        // Variable estática para asegurar que solo un dropdown esté abierto a la vez
+        private static Dropdown _currentlyOpenDropdown;
 
         public int SelectedIndex
         {
@@ -133,7 +136,24 @@ namespace monogame_test.Models
             if (IsHovered && mouseState.LeftButton == ButtonState.Released && 
                 prevMouseState.LeftButton == ButtonState.Pressed)
             {
-                _isOpen = !_isOpen;
+                // Si este dropdown ya está abierto, cerrarlo
+                if (_isOpen)
+                {
+                    _isOpen = false;
+                    _currentlyOpenDropdown = null;
+                }
+                else
+                {
+                    // Cerrar cualquier otro dropdown que esté abierto
+                    if (_currentlyOpenDropdown != null && _currentlyOpenDropdown != this)
+                    {
+                        _currentlyOpenDropdown._isOpen = false;
+                    }
+                    
+                    // Abrir este dropdown
+                    _isOpen = true;
+                    _currentlyOpenDropdown = this;
+                }
             }
             
             // Check if an option was clicked
@@ -147,6 +167,7 @@ namespace monogame_test.Models
                     {
                         SelectedIndex = i;
                         _isOpen = false;
+                        _currentlyOpenDropdown = null;
                         break;
                     }
                 }
@@ -158,6 +179,7 @@ namespace monogame_test.Models
                 !IsHovered && !IsOptionHovered(mouseState.Position))
             {
                 _isOpen = false;
+                _currentlyOpenDropdown = null;
             }
         }
 
@@ -173,7 +195,20 @@ namespace monogame_test.Models
             return false;
         }
 
+        // Método de dibujo principal (ahora llama a los métodos separados)
         public override void Draw(SpriteBatch spriteBatch, SpriteFont font)
+        {
+            if (!IsVisible) return;
+            
+            // Dibujar el fondo y los botones del dropdown
+            DrawBackground(spriteBatch, font);
+            
+            // Dibujar el contenido y las opciones desplegadas
+            DrawContent(spriteBatch, font);
+        }
+        
+        // Método para dibujar solamente el fondo y el borde del dropdown
+        public void DrawBackground(SpriteBatch spriteBatch, SpriteFont font)
         {
             if (!IsVisible) return;
             
@@ -182,6 +217,14 @@ namespace monogame_test.Models
             // Draw main dropdown box
             spriteBatch.Draw(pixel, Bounds, IsHovered ? Color.LightGray : Color.White);
             DrawBorder(spriteBatch, Bounds, Color.Black, 2);
+        }
+        
+        // Método para dibujar el texto y las opciones desplegadas del dropdown
+        public void DrawContent(SpriteBatch spriteBatch, SpriteFont font)
+        {
+            if (!IsVisible) return;
+            
+            Texture2D pixel = UIExtensions.GetPixelTexture(spriteBatch.GraphicsDevice);
             
             // Draw selected option text
             Vector2 textSize = font.MeasureString(SelectedOption);
