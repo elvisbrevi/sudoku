@@ -52,6 +52,7 @@ _ReSharper*/
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 bin/Debug/*
+**/bin/*
 obj/Debug/net8.0/monogame-test.AssemblyInfo.cs
 obj/Debug/net8.0/monogame-test.AssemblyInfoInputs.cache
 obj/Debug/net8.0/monogame-test.dll
