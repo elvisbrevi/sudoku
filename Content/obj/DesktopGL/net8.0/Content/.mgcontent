@@ -4,8 +4,8 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>/Users/elvisbrevi/Code/games/sudoku copy/Content/ball.png</File>
-    <File>/Users/elvisbrevi/Code/games/sudoku copy/Content/DefaultFont.spritefont</File>
+    <File>/Users/elvisbrevi/Code/games/sudoku/Content/ball.png</File>
+    <File>/Users/elvisbrevi/Code/games/sudoku/Content/DefaultFont.spritefont</File>
   </SourceFiles>
   <DestFiles>
     <File xsi:nil="true" />

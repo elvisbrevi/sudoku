@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/elvisbrevi/Code/games/sudoku copy/monogame-test.csproj": {}
+    "/Users/elvisbrevi/Code/games/sudoku/monogame-test.csproj": {}
   },
   "projects": {
-    "/Users/elvisbrevi/Code/games/sudoku copy/monogame-test.csproj": {
+    "/Users/elvisbrevi/Code/games/sudoku/monogame-test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/elvisbrevi/Code/games/sudoku copy/monogame-test.csproj",
+        "projectUniqueName": "/Users/elvisbrevi/Code/games/sudoku/monogame-test.csproj",
         "projectName": "monogame-test",
-        "projectPath": "/Users/elvisbrevi/Code/games/sudoku copy/monogame-test.csproj",
+        "projectPath": "/Users/elvisbrevi/Code/games/sudoku/monogame-test.csproj",
         "packagesPath": "/Users/elvisbrevi/.nuget/packages/",
-        "outputPath": "/Users/elvisbrevi/Code/games/sudoku copy/obj/",
+        "outputPath": "/Users/elvisbrevi/Code/games/sudoku/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/elvisbrevi/.nuget/NuGet/NuGet.Config"
