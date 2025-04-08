@@ -51,10 +51,7 @@ _ReSharper*/
 *.snupkg
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
-bin/Debug/net8.0/monogame-test.dll
-bin/Debug/net8.0/monogame-test.dll
-bin/Debug/net8.0/monogame-test.dll
-bin/Debug/net8.0/monogame-test.pdb
+bin/Debug/*
 obj/Debug/net8.0/monogame-test.AssemblyInfo.cs
 obj/Debug/net8.0/monogame-test.AssemblyInfoInputs.cache
 obj/Debug/net8.0/monogame-test.dll
