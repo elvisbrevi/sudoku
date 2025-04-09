@@ -21,7 +21,6 @@ namespace monogame_test.Models
 
         private int _selectedRow = -1;
         private int _selectedCol = -1;
-        private UI_Manager _uiManager = UI_Manager.GetInstance();
         private SudokuGrid _sudoGrid = SudokuGrid.GetInstance();
         private GameConfig _gameConfig = GameConfig.GetInstance();
         private static GameStateManager _instance;
@@ -54,9 +53,6 @@ namespace monogame_test.Models
             _selectedCol = -1;
             puzzleSolved = false;
             gameInitialized = true;
-
-            // Actualizar el panel de selección de valores con la configuracion actual
-            _uiManager.UpdateValueSelectionPanel();
         }
     }
 }
