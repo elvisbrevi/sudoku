@@ -4,10 +4,8 @@ using monogame_test.Models;
 namespace monogame_test.Models
 {
     // Singleton for game configuration
-    public class GameConfig
+    public sealed class GameConfig
     {
-        private static GameConfig _instance;
-        
         // Game settings
         public int BoxSize { get; set; } = 3; // 2 = 4x4, 3 = 9x9
         public int Size { get => BoxSize; set => BoxSize = value; } // Alias for BoxSize
@@ -17,10 +15,18 @@ namespace monogame_test.Models
 
         // Computed properties
         public int GridSize => BoxSize * BoxSize;
-        
-        private GameConfig() {}
 
-        public static GameConfig Instance => _instance ??= new GameConfig();
+        private static GameConfig _instance;
+        private GameConfig() { }
+
+        public static GameConfig GetInstance()
+        {
+            if (_instance == null)
+            {
+                _instance = new GameConfig();
+            }
+            return _instance;
+        }
 
         // Reset configuration to defaults
         public void ResetToDefaults()

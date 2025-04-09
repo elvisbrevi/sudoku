@@ -4,26 +4,30 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-public class UI_Manager {
-    private GameConfig _gameConfig;
+public sealed class UI_Manager
+{
     private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
     public List<UIComponent> optionsComponents = new List<UIComponent>();
     public List<UIComponent> gameplayComponents = new List<UIComponent>();
     private ValueSelectionPanel _valueSelectionPanel;
     public List<UIComponent> gameOverComponents = new List<UIComponent>();
+    private GameStateManager _gameStateManager = GameStateManager.GetInstance();
+    private SudokuGrid _sudoGrid = SudokuGrid.GetInstance();
+    private GameConfig _gameConfig = GameConfig.GetInstance();
     private static UI_Manager _instance;
-    public static UI_Manager Instance => _instance ??= new UI_Manager();
+    private UI_Manager() { }
 
-    private GameStateManager _gameStateManager = GameStateManager.Instance;
-
-    public UI_Manager() {
-        _gameConfig = GameConfig.Instance;
+    public static UI_Manager GetInstance()
+    {
+        if (_instance == null)
+        {
+            _instance = new UI_Manager();
+        }
+        return _instance;
     }
 
-    public void Load(
-        Game game,
-        SpriteFont font
-    ) {
+    public void Load(Game game, SpriteFont font)
+    {
         CreateMainMenuUI(game, font);
         CreateOptionsUI();
         CreateGameplayUI();
@@ -32,10 +36,10 @@ public class UI_Manager {
     public void CreateGameplayUI()
     {
         gameplayComponents.Clear();
-        
+
         // New Game Button
         var newGameButton = new Button(new Rectangle(650, 100, 120, 40), "New Game");
-        newGameButton.OnClick += () => 
+        newGameButton.OnClick += () =>
         {
             _gameStateManager.InitializeNewGame();
         };
@@ -56,31 +60,32 @@ public class UI_Manager {
         int panelHeight = 180;
         int panelX = 650;  // Alineado con los botones
         int panelY = 280;  // Debajo de los botones
-        
+
         // Crear panel de selección de valores
         _valueSelectionPanel = new ValueSelectionPanel(
             new Rectangle(panelX, panelY, panelWidth, panelHeight),
-            GameConfig.Instance.GridSize,
-            GameConfig.Instance.Representation);
-        
+            _gameConfig.GridSize,
+            _gameConfig.Representation);
+
         // Manejar el evento de selección de valor
-        _valueSelectionPanel.OnValueSelected += (value) => {
-            if (SudokuGrid.Instance.selectedRow >= 0 && SudokuGrid.Instance.selectedCol >= 0 && !SudokuGrid.Instance.Revealed[SudokuGrid.Instance.selectedRow, SudokuGrid.Instance.selectedCol])
+        _valueSelectionPanel.OnValueSelected += (value) =>
+        {
+            if (_sudoGrid.selectedRow >= 0 && _sudoGrid.selectedCol >= 0 && !_sudoGrid.Revealed[_sudoGrid.selectedRow, _sudoGrid.selectedCol])
             {
-                SudokuGrid.Instance.PlaceNumber(SudokuGrid.Instance.selectedRow, SudokuGrid.Instance.selectedCol, value);
+                _sudoGrid.PlaceNumber(_sudoGrid.selectedRow, _sudoGrid.selectedCol, value);
             }
         };
-        
+
         gameplayComponents.Add(_valueSelectionPanel);
     }
 
     public void CreateGameOverUI()
     {
         gameOverComponents.Clear();
-        
+
         // New Game Button
         var newGameButton = new Button(new Rectangle(300, 300, 200, 50), "New Game");
-        newGameButton.OnClick += () => 
+        newGameButton.OnClick += () =>
         {
             _gameStateManager.InitializeNewGame();
             _gameStateManager.ChangeState(GameStateType.Playing);
@@ -96,16 +101,17 @@ public class UI_Manager {
     public void CreateOptionsUI()
     {
         optionsComponents.Clear();
-        
+
         // Grid Size Dropdown
         var sizeLabel = new Button(new Rectangle(200, 150, 200, 30), "Grid Size:");
         sizeLabel.BackgroundColor = Color.Transparent;
         sizeLabel.TextColor = Color.Black;
         optionsComponents.Add(sizeLabel);
-        
+
         var sizeOptions = new string[] { "4x4 (2x2)", "9x9 (3x3)" };
         var sizeDropdown = new Dropdown(new Rectangle(400, 150, 200, 30), sizeOptions, _gameConfig.Size - 2);
-        sizeDropdown.OnSelectionChanged += (index) => {
+        sizeDropdown.OnSelectionChanged += (index) =>
+        {
             _gameConfig.Size = index + 2;
             // Actualizar el panel si ya existe
             UpdateValueSelectionPanel();
@@ -117,7 +123,7 @@ public class UI_Manager {
         difficultyLabel.BackgroundColor = Color.Transparent;
         difficultyLabel.TextColor = Color.Black;
         optionsComponents.Add(difficultyLabel);
-        
+
         var difficultyOptions = new string[] { "Easy", "Medium", "Hard", "Expert" };
         var difficultyDropdown = new Dropdown(new Rectangle(400, 200, 200, 30), difficultyOptions, _gameConfig.Difficulty - 1);
         difficultyDropdown.OnSelectionChanged += (index) => _gameConfig.Difficulty = index + 1;
@@ -128,10 +134,11 @@ public class UI_Manager {
         styleLabel.BackgroundColor = Color.Transparent;
         styleLabel.TextColor = Color.Black;
         optionsComponents.Add(styleLabel);
-        
+
         var styleOptions = new string[] { "Numbers", "Emojis", "Letters", "Colors" };
         var styleDropdown = new Dropdown(new Rectangle(400, 250, 200, 30), styleOptions, (int)_gameConfig.RepresentationType);
-        styleDropdown.OnSelectionChanged += (index) => {
+        styleDropdown.OnSelectionChanged += (index) =>
+        {
             _gameConfig.RepresentationType = (RepresentationFactory.RepresentationType)index;
             // Actualizar el panel si ya existe
             UpdateValueSelectionPanel();
@@ -140,7 +147,7 @@ public class UI_Manager {
 
         // Apply Button
         var applyButton = new Button(new Rectangle(250, 350, 150, 50), "Apply");
-        applyButton.OnClick += () => 
+        applyButton.OnClick += () =>
         {
             if (_gameStateManager.gameInitialized)
             {
@@ -163,13 +170,13 @@ public class UI_Manager {
     public void CreateMainMenuUI(Game game, SpriteFont font)
     {
         _mainMenuComponents.Clear();
-        
+
         // Title
         var titleSize = font.MeasureString("SUDOKU");
 
         // Start Game Button
         var startButton = new Button(new Rectangle(300, 200, 200, 50), "Start Game");
-        startButton.OnClick += () => 
+        startButton.OnClick += () =>
         {
             _gameStateManager.InitializeNewGame();
             _gameStateManager.ChangeState(GameStateType.Playing);
@@ -194,21 +201,22 @@ public class UI_Manager {
         {
             // Mantener la misma posición y tamaño, pero actualizar con los nuevos valores
             Rectangle bounds = _valueSelectionPanel.Bounds;
-            
+
             // Crear un nuevo panel con la configuración actual
             _valueSelectionPanel = new ValueSelectionPanel(
                 bounds,
                 _gameConfig.GridSize,
                 _gameConfig.Representation);
-            
+
             // Restaurar el manejador de eventos
-            _valueSelectionPanel.OnValueSelected += (value) => {
-                if (SudokuGrid.Instance.selectedRow >= 0 && SudokuGrid.Instance.selectedCol >= 0 && !SudokuGrid.Instance.Revealed[SudokuGrid.Instance.selectedRow, SudokuGrid.Instance.selectedCol])
+            _valueSelectionPanel.OnValueSelected += (value) =>
+            {
+                if (_sudoGrid.selectedRow >= 0 && _sudoGrid.selectedCol >= 0 && !_sudoGrid.Revealed[_sudoGrid.selectedRow, _sudoGrid.selectedCol])
                 {
-                    SudokuGrid.Instance.PlaceNumber(SudokuGrid.Instance.selectedRow, SudokuGrid.Instance.selectedCol, value);
+                    _sudoGrid.PlaceNumber(_sudoGrid.selectedRow, _sudoGrid.selectedCol, value);
                 }
             };
-            
+
             // Reemplazar el panel antiguo en la lista de componentes
             for (int i = 0; i < gameplayComponents.Count; i++)
             {

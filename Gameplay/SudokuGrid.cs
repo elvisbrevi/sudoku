@@ -3,12 +3,8 @@ using System.Collections.Generic;
 
 namespace monogame_test.Models
 {
-    public class SudokuGrid
+    public sealed class SudokuGrid
     {
-        // Singleton instance
-        private static SudokuGrid _instance;
-        private static readonly object _lock = new object();
-
         private int[,] _grid;
         private bool[,] _revealed;
         private bool[,] _playerModified; // Track cells modified by the player
@@ -16,17 +12,23 @@ namespace monogame_test.Models
         private int _boxSize;
         private Random _random = new Random();
 
-        // Public accessor for the singleton instance
-        public static SudokuGrid Instance
+        private static SudokuGrid _instance;
+        private static readonly object _lock = new object();
+        private SudokuGrid() { }
+
+        public static SudokuGrid GetInstance()
         {
-            get
+            if (_instance == null)
             {
-                if (_instance == null)
+                lock (_lock)
                 {
-                    throw new InvalidOperationException("SudokuGrid must be initialized with Initialize method before accessing Instance");
+                    if (_instance == null)
+                    {
+                        _instance = new SudokuGrid();
+                    }
                 }
-                return _instance;
             }
+            return _instance;
         }
 
         // Method to initialize the singleton with parameters
@@ -145,7 +147,7 @@ namespace monogame_test.Models
             // Lower difficulty means more cells revealed
             double totalCells = _gridSize * _gridSize;
             double revealPercentage = 0;
-            
+
             switch (difficulty)
             {
                 case 1: // Easy
@@ -224,7 +226,7 @@ namespace monogame_test.Models
                     }
                 }
             }
-            
+
             // Restore original value
             _grid[row, col] = originalValue;
             return true;
@@ -301,7 +303,7 @@ namespace monogame_test.Models
             // Count how many cells the player has actually modified
             int playerModifiedCount = 0;
             int nonRevealedCount = 0;
-            
+
             for (int row = 0; row < _gridSize; row++)
             {
                 for (int col = 0; col < _gridSize; col++)
@@ -311,15 +313,15 @@ namespace monogame_test.Models
                     {
                         continue;
                     }
-                    
+
                     // Count non-revealed cells
                     nonRevealedCount++;
-                    
+
                     // Check if player modified this cell
                     if (_playerModified[row, col])
                     {
                         playerModifiedCount++;
-                        
+
                         // If the cell is empty or has an invalid value, puzzle isn't solved
                         if (_grid[row, col] == 0 || !IsValidCell(row, col))
                         {
@@ -333,7 +335,7 @@ namespace monogame_test.Models
                     }
                 }
             }
-            
+
             // The puzzle is solved if:
             // 1. There are non-revealed cells to solve
             // 2. The player has modified all non-revealed cells
@@ -345,12 +347,12 @@ namespace monogame_test.Models
         private bool IsValidCell(int row, int col)
         {
             int num = _grid[row, col];
-            
+
             // Temporarily clear this cell to check if it's valid
             _grid[row, col] = 0;
             bool isValid = IsValidPlacement(row, col, num);
             _grid[row, col] = num;
-            
+
             return isValid;
         }
 
