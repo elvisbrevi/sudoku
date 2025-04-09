@@ -383,68 +383,22 @@ namespace monogame_test
             switch (_gameStateManager.CurrentState)
             {
                 case GameStateType.MainMenu:
-                    DrawMainMenu();
+                    _uiManager.DrawMainMenu(_spriteBatch);
                     break;
                 case GameStateType.Options:
-                    DrawOptions();
+                    _uiManager.DrawOptions(_spriteBatch);
                     break;
                 case GameStateType.Playing:
                     DrawGameplay();
                     break;
                 case GameStateType.GameOver:
-                    DrawGameOver();
+                    _uiManager.DrawGameOver(_spriteBatch);
                     break;
             }
 
             _spriteBatch.End();
 
             base.Draw(gameTime);
-        }
-
-        private void DrawMainMenu()
-        {
-            // Draw title
-            string title = "SUDOKU";
-            Vector2 titleSize = _font.MeasureString(title);
-            _spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 100), Color.DarkBlue, 0f, Vector2.Zero, 2.0f, SpriteEffects.None, 0f);
-
-            // Draw UI components
-            foreach (var component in _mainMenuComponents)
-            {
-                component.Draw(_spriteBatch, _font);
-            }
-        }
-
-        private void DrawOptions()
-        {
-            // Draw title
-            string title = "OPTIONS";
-            Vector2 titleSize = _font.MeasureString(title);
-            _spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 80), Color.DarkBlue, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
-
-            // Dibujar primero los fondos y los bordes de todos los componentes
-            foreach (var component in _optionsComponents)
-            {
-                if (component is Dropdown dropdown)
-                {
-                    // Solo dibujamos el fondo y el borde del dropdown, no su contenido desplegado
-                    dropdown.DrawBackground(_spriteBatch, _font);
-                }
-                else
-                {
-                    // Componentes normales se dibujan completamente
-                    component.Draw(_spriteBatch, _font);
-                }
-            }
-
-            // Luego dibujamos el contenido de los dropdowns por encima de todo
-            foreach (var component in _uiManager.optionsComponents)
-            {
-                if (component is Dropdown dropdown)
-                {
-                    dropdown.DrawContent(_spriteBatch, _font);
-                }
-            }
         }
 
         private void DrawGameplay()
@@ -456,25 +410,6 @@ namespace monogame_test
 
             // Dibujamos todos los componentes
             foreach (var component in _uiManager.gameplayComponents)
-            {
-                component.Draw(_spriteBatch, _font);
-            }
-        }
-
-        private void DrawGameOver()
-        {
-            // Draw title
-            string title = "PUZZLE SOLVED!";
-            Vector2 titleSize = _font.MeasureString(title);
-            _spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 150), Color.Green, 0f, Vector2.Zero, 1.8f, SpriteEffects.None, 0f);
-
-            // Draw time and score info (if implemented)
-            string message = "Congratulations! You've completed the puzzle.";
-            Vector2 messageSize = _font.MeasureString(message);
-            _spriteBatch.DrawString(_font, message, new Vector2(400 - messageSize.X / 2, 220), Color.Black);
-
-            // Draw UI components
-            foreach (var component in _uiManager.gameOverComponents)
             {
                 component.Draw(_spriteBatch, _font);
             }

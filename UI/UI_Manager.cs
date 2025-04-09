@@ -11,6 +11,9 @@ public sealed class UI_Manager
     public List<UIComponent> gameplayComponents = new List<UIComponent>();
     private ValueSelectionPanel _valueSelectionPanel;
     public List<UIComponent> gameOverComponents = new List<UIComponent>();
+    private SpriteFont _font;
+
+    private Game _game;
     private GameStateManager _gameStateManager = GameStateManager.GetInstance();
     private SudokuGrid _sudoGrid = SudokuGrid.GetInstance();
     private GameConfig _gameConfig = GameConfig.GetInstance();
@@ -28,7 +31,9 @@ public sealed class UI_Manager
 
     public void Load(Game game, SpriteFont font)
     {
-        CreateMainMenuUI(game, font);
+        _font = font;
+        _game = game;
+        CreateMainMenuUI();
         CreateOptionsUI();
         CreateGameplayUI();
         CreateGameOverUI();
@@ -167,12 +172,12 @@ public sealed class UI_Manager
         optionsComponents.Add(backButton);
     }
 
-    public void CreateMainMenuUI(Game game, SpriteFont font)
+    public void CreateMainMenuUI()
     {
         _mainMenuComponents.Clear();
 
         // Title
-        var titleSize = font.MeasureString("SUDOKU");
+        var titleSize = _font.MeasureString("SUDOKU");
 
         // Start Game Button
         var startButton = new Button(new Rectangle(300, 200, 200, 50), "Start Game");
@@ -190,7 +195,7 @@ public sealed class UI_Manager
 
         // Exit Button
         var exitButton = new Button(new Rectangle(300, 350, 200, 50), "Exit");
-        exitButton.OnClick += game.Exit;
+        exitButton.OnClick += _game.Exit;
         _mainMenuComponents.Add(exitButton);
     }
 
@@ -225,6 +230,71 @@ public sealed class UI_Manager
                     gameplayComponents[i] = _valueSelectionPanel;
                     break;
                 }
+            }
+        }
+    }
+
+    public void DrawGameOver(SpriteBatch spriteBatch)
+    {
+        // Draw title
+        string title = "PUZZLE SOLVED!";
+        Vector2 titleSize = _font.MeasureString(title);
+        spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 150), Color.Green, 0f, Vector2.Zero, 1.8f, SpriteEffects.None, 0f);
+
+        // Draw time and score info (if implemented)
+        string message = "Congratulations! You've completed the puzzle.";
+        Vector2 messageSize = _font.MeasureString(message);
+        spriteBatch.DrawString(_font, message, new Vector2(400 - messageSize.X / 2, 220), Color.Black);
+
+        // Draw UI components
+        foreach (var component in gameOverComponents)
+        {
+            component.Draw(spriteBatch, _font);
+        }
+    }
+
+    public void DrawMainMenu(SpriteBatch spriteBatch)
+    {
+        // Draw title
+        string title = "SUDOKU";
+        Vector2 titleSize = _font.MeasureString(title);
+        spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 100), Color.DarkBlue, 0f, Vector2.Zero, 2.0f, SpriteEffects.None, 0f);
+
+        // Draw UI components
+        foreach (var component in _mainMenuComponents)
+        {
+            component.Draw(spriteBatch, _font);
+        }
+    }
+
+    public void DrawOptions(SpriteBatch spriteBatch)
+    {
+        // Draw title
+        string title = "OPTIONS";
+        Vector2 titleSize = _font.MeasureString(title);
+        spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 80), Color.DarkBlue, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
+
+        // Dibujar primero los fondos y los bordes de todos los componentes
+        foreach (var component in optionsComponents)
+        {
+            if (component is Dropdown dropdown)
+            {
+                // Solo dibujamos el fondo y el borde del dropdown, no su contenido desplegado
+                dropdown.DrawBackground(spriteBatch, _font);
+            }
+            else
+            {
+                // Componentes normales se dibujan completamente
+                component.Draw(spriteBatch, _font);
+            }
+        }
+
+        // Luego dibujamos el contenido de los dropdowns por encima de todo
+        foreach (var component in optionsComponents)
+        {
+            if (component is Dropdown dropdown)
+            {
+                dropdown.DrawContent(spriteBatch, _font);
             }
         }
     }
