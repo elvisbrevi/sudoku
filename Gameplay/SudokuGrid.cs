@@ -11,6 +11,7 @@ namespace monogame_test.Models
         private int _gridSize;
         private int _boxSize;
         private Random _random = new Random();
+        private GameConfig _gameConfig = GameConfig.GetInstance();
 
         private static SudokuGrid _instance;
         private static readonly object _lock = new object();
@@ -24,7 +25,11 @@ namespace monogame_test.Models
                 {
                     if (_instance == null)
                     {
-                        _instance = new SudokuGrid();
+                        _instance = new SudokuGrid(GameConfig.GetInstance().BoxSize);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("SudokuGrid is already initialized");
                     }
                 }
             }
@@ -32,7 +37,7 @@ namespace monogame_test.Models
         }
 
         // Method to initialize the singleton with parameters
-        public static void Initialize(int boxSize)
+        public void Initialize(int boxSize)
         {
             lock (_lock)
             {
@@ -48,7 +53,7 @@ namespace monogame_test.Models
         }
 
         // Method to reset the singleton (useful for testing or creating new games)
-        public static void Reset()
+        public void Reset()
         {
             lock (_lock)
             {

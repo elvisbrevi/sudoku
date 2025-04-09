@@ -45,6 +45,7 @@ namespace monogame_test
             _gameStateManager = GameStateManager.GetInstance();
             _uiManager = UI_Manager.GetInstance();
             _gameConfig = GameConfig.GetInstance();
+            _sudokuGrid = SudokuGrid.GetInstance();
         }
 
         protected override void Initialize()

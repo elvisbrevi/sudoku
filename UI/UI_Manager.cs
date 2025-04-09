@@ -17,7 +17,7 @@ public sealed class UI_Manager
     private SpriteFont _font;
     private Game _game;
     private GameStateManager _gameStateManager = GameStateManager.GetInstance();
-    private SudokuGrid _sudoGrid = SudokuGrid.GetInstance();
+    private SudokuGrid _sudokuGrid = SudokuGrid.GetInstance();
     private GameConfig _gameConfig = GameConfig.GetInstance();
     private static UI_Manager _instance;
     private UI_Manager() { }
@@ -77,9 +77,9 @@ public sealed class UI_Manager
         // Manejar el evento de selección de valor
         _valueSelectionPanel.OnValueSelected += (value) =>
         {
-            if (_sudoGrid.selectedRow >= 0 && _sudoGrid.selectedCol >= 0 && !_sudoGrid.Revealed[_sudoGrid.selectedRow, _sudoGrid.selectedCol])
+            if (_sudokuGrid.selectedRow >= 0 && _sudokuGrid.selectedCol >= 0 && !_sudokuGrid.Revealed[_sudokuGrid.selectedRow, _sudokuGrid.selectedCol])
             {
-                _sudoGrid.PlaceNumber(_sudoGrid.selectedRow, _sudoGrid.selectedCol, value);
+                _sudokuGrid.PlaceNumber(_sudokuGrid.selectedRow, _sudokuGrid.selectedCol, value);
             }
         };
 
@@ -244,9 +244,9 @@ public sealed class UI_Manager
             // Restaurar el manejador de eventos
             _valueSelectionPanel.OnValueSelected += (value) =>
             {
-                if (_sudoGrid.selectedRow >= 0 && _sudoGrid.selectedCol >= 0 && !_sudoGrid.Revealed[_sudoGrid.selectedRow, _sudoGrid.selectedCol])
+                if (_sudokuGrid.selectedRow >= 0 && _sudokuGrid.selectedCol >= 0 && !_sudokuGrid.Revealed[_sudokuGrid.selectedRow, _sudokuGrid.selectedCol])
                 {
-                    _sudoGrid.PlaceNumber(_sudoGrid.selectedRow, _sudoGrid.selectedCol, value);
+                    _sudokuGrid.PlaceNumber(_sudokuGrid.selectedRow, _sudokuGrid.selectedCol, value);
                 }
             };
 
