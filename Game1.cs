@@ -94,16 +94,16 @@ namespace monogame_test
             switch (_gameStateManager.CurrentState)
             {
                 case GameStateType.MainMenu:
-                    _uiManager.UpdateMainMenu(mouseState);
+                    _uiManager.UpdateMainMenu(mouseState, _prevMouseState);
                     break;
                 case GameStateType.Options:
-                    _uiManager.UpdateOptions(mouseState);
+                    _uiManager.UpdateOptions(mouseState, _prevMouseState);
                     break;
                 case GameStateType.Playing:
                     UpdateGameplay(mouseState, keyboardState);
                     break;
                 case GameStateType.GameOver:
-                    _uiManager.UpdateGameOver(mouseState);
+                    _uiManager.UpdateGameOver(mouseState, _prevMouseState);
                     break;
             }
 

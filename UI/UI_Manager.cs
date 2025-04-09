@@ -201,7 +201,7 @@ public sealed class UI_Manager
         _mainMenuComponents.Add(exitButton);
     }
 
-    public void UpdateMainMenu(MouseState mouseState)
+    public void UpdateMainMenu(MouseState mouseState, MouseState _prevMouseState)
     {
         foreach (var component in _mainMenuComponents)
         {
@@ -209,7 +209,7 @@ public sealed class UI_Manager
         }
     }
 
-    public void UpdateGameOver(MouseState mouseState)
+    public void UpdateGameOver(MouseState mouseState, MouseState _prevMouseState)
     {
         foreach (var component in _gameOverComponents)
         {
@@ -217,7 +217,7 @@ public sealed class UI_Manager
         }
     }
 
-    public void UpdateOptions(MouseState mouseState)
+    public void UpdateOptions(MouseState mouseState, MouseState _prevMouseState)
     {
         // Crear una copia de la lista para evitar errores si se modifica durante la iteración
         var componentsCopy = new List<UIComponent>(_optionsComponents);
