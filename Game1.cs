@@ -11,7 +11,6 @@ namespace monogame_test
     {
         // Graphics and Assets
         private GraphicsDeviceManager _graphics;
-        private List<UIComponent> _gameplayComponents = new List<UIComponent>();
 
         // Game Assets
         private SpriteBatch _spriteBatch;
@@ -101,6 +100,7 @@ namespace monogame_test
                     _uiManager.UpdateOptions(mouseState, _prevMouseState);
                     break;
                 case GameStateType.Playing:
+                    _uiManager.UpdateInGameOptions(mouseState, _prevMouseState);
                     UpdateGameplay(mouseState, keyboardState);
                     break;
                 case GameStateType.GameOver:
@@ -117,15 +117,6 @@ namespace monogame_test
 
         private void UpdateGameplay(MouseState mouseState, KeyboardState keyboardState)
         {
-            // Crear una copia de la lista para evitar errores si se modifica durante la iteración
-            var componentsCopy = new List<UIComponent>(_gameplayComponents);
-
-            // Update UI components from copy
-            foreach (var component in componentsCopy)
-            {
-                component.Update(mouseState, _prevMouseState);
-            }
-
             if (_gameStateManager.gameInitialized && !_gameStateManager.puzzleSolved)
             {
                 // Check if puzzle is solved
@@ -376,7 +367,7 @@ namespace monogame_test
             DrawSudokuGrid();
 
             // Dibujamos todos los componentes
-            foreach (var component in _uiManager.gameplayComponents)
+            foreach (var component in _uiManager._gameplayComponents)
             {
                 component.Draw(_spriteBatch, _font);
             }

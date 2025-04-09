@@ -9,7 +9,7 @@ public sealed class UI_Manager
 {
     private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
     public List<UIComponent> _optionsComponents = new List<UIComponent>();
-    public List<UIComponent> gameplayComponents = new List<UIComponent>();
+    public List<UIComponent> _gameplayComponents = new List<UIComponent>();
     private ValueSelectionPanel _valueSelectionPanel;
     public List<UIComponent> _gameOverComponents = new List<UIComponent>();
     private MouseState _prevMouseState;
@@ -42,7 +42,7 @@ public sealed class UI_Manager
     }
     public void CreateGameplayUI()
     {
-        gameplayComponents.Clear();
+        _gameplayComponents.Clear();
 
         // New Game Button
         var newGameButton = new Button(new Rectangle(650, 100, 120, 40), "New Game");
@@ -50,17 +50,17 @@ public sealed class UI_Manager
         {
             _gameStateManager.InitializeNewGame();
         };
-        gameplayComponents.Add(newGameButton);
+        _gameplayComponents.Add(newGameButton);
 
         // Options Button
         var optionsButton = new Button(new Rectangle(650, 160, 120, 40), "Options");
         optionsButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.Options);
-        gameplayComponents.Add(optionsButton);
+        _gameplayComponents.Add(optionsButton);
 
         // Back to Menu Button
         var menuButton = new Button(new Rectangle(650, 220, 120, 40), "Main Menu");
         menuButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
-        gameplayComponents.Add(menuButton);
+        _gameplayComponents.Add(menuButton);
 
         // Calcular tamaño y posición del panel de selección de valores
         int panelWidth = 180;
@@ -83,7 +83,7 @@ public sealed class UI_Manager
             }
         };
 
-        gameplayComponents.Add(_valueSelectionPanel);
+        _gameplayComponents.Add(_valueSelectionPanel);
     }
 
     public void CreateGameOverUI()
@@ -227,6 +227,18 @@ public sealed class UI_Manager
             component.Update(mouseState, _prevMouseState);
         }
     }
+
+    public void UpdateInGameOptions(MouseState mouseState, MouseState _prevMouseState)
+    {
+        // Crear una copia de la lista para evitar errores si se modifica durante la iteración
+        var componentsCopy = new List<UIComponent>(_gameplayComponents);
+
+        foreach (var component in componentsCopy)
+        {
+            component.Update(mouseState, _prevMouseState);
+        }
+    }
+
     public void UpdateValueSelectionPanel()
     {
         // Solo actualizar si estamos en modo de juego y el panel ya existe
@@ -251,11 +263,11 @@ public sealed class UI_Manager
             };
 
             // Reemplazar el panel antiguo en la lista de componentes
-            for (int i = 0; i < gameplayComponents.Count; i++)
+            for (int i = 0; i < _gameplayComponents.Count; i++)
             {
-                if (gameplayComponents[i] is ValueSelectionPanel)
+                if (_gameplayComponents[i] is ValueSelectionPanel)
                 {
-                    gameplayComponents[i] = _valueSelectionPanel;
+                    _gameplayComponents[i] = _valueSelectionPanel;
                     break;
                 }
             }
