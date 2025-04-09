@@ -42,6 +42,7 @@ namespace monogame_test.Models
 
         public void InitializeNewGame()
         {
+            Console.WriteLine("Initializing new game...");
             // Reset and initialize the SudokuGrid singleton with the configured size
             SudokuGrid.Reset();
             SudokuGrid.Initialize(_gameConfig.Size);
@@ -53,6 +54,7 @@ namespace monogame_test.Models
             _selectedCol = -1;
             puzzleSolved = false;
             gameInitialized = true;
+            Console.WriteLine("New game initialized.");
         }
     }
 }

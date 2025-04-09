@@ -3,16 +3,18 @@ using monogame_test.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using Microsoft.Xna.Framework.Input;
 
 public sealed class UI_Manager
 {
     private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
-    public List<UIComponent> optionsComponents = new List<UIComponent>();
+    public List<UIComponent> _optionsComponents = new List<UIComponent>();
     public List<UIComponent> gameplayComponents = new List<UIComponent>();
     private ValueSelectionPanel _valueSelectionPanel;
-    public List<UIComponent> gameOverComponents = new List<UIComponent>();
+    public List<UIComponent> _gameOverComponents = new List<UIComponent>();
+    private MouseState _prevMouseState;
+    private KeyboardState _prevKeyboardState;
     private SpriteFont _font;
-
     private Game _game;
     private GameStateManager _gameStateManager = GameStateManager.GetInstance();
     private SudokuGrid _sudoGrid = SudokuGrid.GetInstance();
@@ -86,7 +88,7 @@ public sealed class UI_Manager
 
     public void CreateGameOverUI()
     {
-        gameOverComponents.Clear();
+        _gameOverComponents.Clear();
 
         // New Game Button
         var newGameButton = new Button(new Rectangle(300, 300, 200, 50), "New Game");
@@ -95,23 +97,23 @@ public sealed class UI_Manager
             _gameStateManager.InitializeNewGame();
             _gameStateManager.ChangeState(GameStateType.Playing);
         };
-        gameOverComponents.Add(newGameButton);
+        _gameOverComponents.Add(newGameButton);
 
         // Back to Menu Button
         var menuButton = new Button(new Rectangle(300, 375, 200, 50), "Main Menu");
         menuButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
-        gameOverComponents.Add(menuButton);
+        _gameOverComponents.Add(menuButton);
     }
 
     public void CreateOptionsUI()
     {
-        optionsComponents.Clear();
+        _optionsComponents.Clear();
 
         // Grid Size Dropdown
         var sizeLabel = new Button(new Rectangle(200, 150, 200, 30), "Grid Size:");
         sizeLabel.BackgroundColor = Color.Transparent;
         sizeLabel.TextColor = Color.Black;
-        optionsComponents.Add(sizeLabel);
+        _optionsComponents.Add(sizeLabel);
 
         var sizeOptions = new string[] { "4x4 (2x2)", "9x9 (3x3)" };
         var sizeDropdown = new Dropdown(new Rectangle(400, 150, 200, 30), sizeOptions, _gameConfig.Size - 2);
@@ -121,24 +123,24 @@ public sealed class UI_Manager
             // Actualizar el panel si ya existe
             UpdateValueSelectionPanel();
         };
-        optionsComponents.Add(sizeDropdown);
+        _optionsComponents.Add(sizeDropdown);
 
         // Difficulty Dropdown
         var difficultyLabel = new Button(new Rectangle(200, 200, 200, 30), "Difficulty:");
         difficultyLabel.BackgroundColor = Color.Transparent;
         difficultyLabel.TextColor = Color.Black;
-        optionsComponents.Add(difficultyLabel);
+        _optionsComponents.Add(difficultyLabel);
 
         var difficultyOptions = new string[] { "Easy", "Medium", "Hard", "Expert" };
         var difficultyDropdown = new Dropdown(new Rectangle(400, 200, 200, 30), difficultyOptions, _gameConfig.Difficulty - 1);
         difficultyDropdown.OnSelectionChanged += (index) => _gameConfig.Difficulty = index + 1;
-        optionsComponents.Add(difficultyDropdown);
+        _optionsComponents.Add(difficultyDropdown);
 
         // Style Dropdown
         var styleLabel = new Button(new Rectangle(200, 250, 200, 30), "Style:");
         styleLabel.BackgroundColor = Color.Transparent;
         styleLabel.TextColor = Color.Black;
-        optionsComponents.Add(styleLabel);
+        _optionsComponents.Add(styleLabel);
 
         var styleOptions = new string[] { "Numbers", "Emojis", "Letters", "Colors" };
         var styleDropdown = new Dropdown(new Rectangle(400, 250, 200, 30), styleOptions, (int)_gameConfig.RepresentationType);
@@ -148,7 +150,7 @@ public sealed class UI_Manager
             // Actualizar el panel si ya existe
             UpdateValueSelectionPanel();
         };
-        optionsComponents.Add(styleDropdown);
+        _optionsComponents.Add(styleDropdown);
 
         // Apply Button
         var applyButton = new Button(new Rectangle(250, 350, 150, 50), "Apply");
@@ -164,12 +166,12 @@ public sealed class UI_Manager
                 _gameStateManager.ChangeState(GameStateType.MainMenu);
             }
         };
-        optionsComponents.Add(applyButton);
+        _optionsComponents.Add(applyButton);
 
         // Back Button
         var backButton = new Button(new Rectangle(425, 350, 150, 50), "Back");
         backButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
-        optionsComponents.Add(backButton);
+        _optionsComponents.Add(backButton);
     }
 
     public void CreateMainMenuUI()
@@ -199,6 +201,32 @@ public sealed class UI_Manager
         _mainMenuComponents.Add(exitButton);
     }
 
+    public void UpdateMainMenu(MouseState mouseState)
+    {
+        foreach (var component in _mainMenuComponents)
+        {
+            component.Update(mouseState, _prevMouseState);
+        }
+    }
+
+    public void UpdateGameOver(MouseState mouseState)
+    {
+        foreach (var component in _gameOverComponents)
+        {
+            component.Update(mouseState, _prevMouseState);
+        }
+    }
+
+    public void UpdateOptions(MouseState mouseState)
+    {
+        // Crear una copia de la lista para evitar errores si se modifica durante la iteración
+        var componentsCopy = new List<UIComponent>(_optionsComponents);
+
+        foreach (var component in componentsCopy)
+        {
+            component.Update(mouseState, _prevMouseState);
+        }
+    }
     public void UpdateValueSelectionPanel()
     {
         // Solo actualizar si estamos en modo de juego y el panel ya existe
@@ -247,7 +275,7 @@ public sealed class UI_Manager
         spriteBatch.DrawString(_font, message, new Vector2(400 - messageSize.X / 2, 220), Color.Black);
 
         // Draw UI components
-        foreach (var component in gameOverComponents)
+        foreach (var component in _gameOverComponents)
         {
             component.Draw(spriteBatch, _font);
         }
@@ -275,7 +303,7 @@ public sealed class UI_Manager
         spriteBatch.DrawString(_font, title, new Vector2(400 - titleSize.X / 2, 80), Color.DarkBlue, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
 
         // Dibujar primero los fondos y los bordes de todos los componentes
-        foreach (var component in optionsComponents)
+        foreach (var component in _optionsComponents)
         {
             if (component is Dropdown dropdown)
             {
@@ -290,7 +318,7 @@ public sealed class UI_Manager
         }
 
         // Luego dibujamos el contenido de los dropdowns por encima de todo
-        foreach (var component in optionsComponents)
+        foreach (var component in _optionsComponents)
         {
             if (component is Dropdown dropdown)
             {

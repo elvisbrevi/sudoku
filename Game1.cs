@@ -11,11 +11,7 @@ namespace monogame_test
     {
         // Graphics and Assets
         private GraphicsDeviceManager _graphics;
-        private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
-        private List<UIComponent> _optionsComponents = new List<UIComponent>();
         private List<UIComponent> _gameplayComponents = new List<UIComponent>();
-        private List<UIComponent> _gameOverComponents = new List<UIComponent>();
-        private ValueSelectionPanel _valueSelectionPanel;
 
         // Game Assets
         private SpriteBatch _spriteBatch;
@@ -23,9 +19,7 @@ namespace monogame_test
 
         // Game State
         private GameStateManager _gameStateManager;
-
         private SudokuGrid _sudokuGrid;
-
         private MouseState _prevMouseState;
         private KeyboardState _prevKeyboardState;
         private UI_Manager _uiManager;
@@ -70,7 +64,6 @@ namespace monogame_test
 
             // Create UI components
             _uiManager.Load(this, _font);
-            Console.WriteLine("UI components loaded");
         }
 
         protected override void Update(GameTime gameTime)
@@ -101,16 +94,16 @@ namespace monogame_test
             switch (_gameStateManager.CurrentState)
             {
                 case GameStateType.MainMenu:
-                    UpdateMainMenu(mouseState);
+                    _uiManager.UpdateMainMenu(mouseState);
                     break;
                 case GameStateType.Options:
-                    UpdateOptions(mouseState);
+                    _uiManager.UpdateOptions(mouseState);
                     break;
                 case GameStateType.Playing:
                     UpdateGameplay(mouseState, keyboardState);
                     break;
                 case GameStateType.GameOver:
-                    UpdateGameOver(mouseState);
+                    _uiManager.UpdateGameOver(mouseState);
                     break;
             }
 
@@ -119,25 +112,6 @@ namespace monogame_test
             _prevKeyboardState = keyboardState;
 
             base.Update(gameTime);
-        }
-
-        private void UpdateMainMenu(MouseState mouseState)
-        {
-            foreach (var component in _mainMenuComponents)
-            {
-                component.Update(mouseState, _prevMouseState);
-            }
-        }
-
-        private void UpdateOptions(MouseState mouseState)
-        {
-            // Crear una copia de la lista para evitar errores si se modifica durante la iteración
-            var componentsCopy = new List<UIComponent>(_optionsComponents);
-
-            foreach (var component in componentsCopy)
-            {
-                component.Update(mouseState, _prevMouseState);
-            }
         }
 
         private void UpdateGameplay(MouseState mouseState, KeyboardState keyboardState)
@@ -169,14 +143,6 @@ namespace monogame_test
 
                 // Handle keyboard input for numbers
                 HandleNumberInput(keyboardState);
-            }
-        }
-
-        private void UpdateGameOver(MouseState mouseState)
-        {
-            foreach (var component in _gameOverComponents)
-            {
-                component.Update(mouseState, _prevMouseState);
             }
         }
 
