@@ -11,27 +11,26 @@ namespace monogame_test
     {
         // Graphics and Assets
         private GraphicsDeviceManager _graphics;
+        private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
+        private List<UIComponent> _optionsComponents = new List<UIComponent>();
+        private List<UIComponent> _gameplayComponents = new List<UIComponent>();
+        private List<UIComponent> _gameOverComponents = new List<UIComponent>();
+        private ValueSelectionPanel _valueSelectionPanel;
+
+        // Game Assets
         private SpriteBatch _spriteBatch;
         private SpriteFont _font;
 
         // Game State
-        private GameStateManager _gameStateManager;
-        private GameConfig _gameConfig;
+        private GameStateManager gameStateManager;
+        
         private SudokuGrid _sudokuGrid;
-        private int _selectedRow = -1;
-        private int _selectedCol = -1;
+        
         private MouseState _prevMouseState;
         private KeyboardState _prevKeyboardState;
-        private bool _gameInitialized = false;
-        private bool _puzzleSolved = false;
 
-        // UI Elements
-        private List<UIComponent> _mainMenuComponents = new List<UIComponent>();
-        private List<UIComponent> _optionsComponents = new List<UIComponent>();
-        private List<UIComponent> _gameplayComponents = new List<UIComponent>();
-    private ValueSelectionPanel _valueSelectionPanel;
-        private List<UIComponent> _gameOverComponents = new List<UIComponent>();
-        
+        UI_Manager _uiManager;
+
         // Constants for drawing
         private const int CellSize = 40;
         private const int GridMargin = 50;
@@ -49,8 +48,8 @@ namespace monogame_test
         IsMouseVisible = true;
         
         // Initialize singletons
-        _gameStateManager = GameStateManager.Instance;
-        _gameConfig = GameConfig.Instance;
+        gameStateManager = GameStateManager.Instance;
+        _uiManager = UI_Manager.Instance;
     }
 
     protected override void Initialize()
@@ -69,215 +68,8 @@ namespace monogame_test
         _font = Content.Load<SpriteFont>("DefaultFont");
         
         // Create UI components
-        CreateMainMenuUI();
-        CreateOptionsUI();
-        CreateGameplayUI();
-        CreateGameOverUI();
-    }
-
-    private void CreateMainMenuUI()
-    {
-        _mainMenuComponents.Clear();
-        
-        // Title
-        var titleSize = _font.MeasureString("SUDOKU");
-
-        // Start Game Button
-        var startButton = new Button(new Rectangle(300, 200, 200, 50), "Start Game");
-        startButton.OnClick += () => 
-        {
-            InitializeNewGame();
-            _gameStateManager.ChangeState(GameStateType.Playing);
-        };
-        _mainMenuComponents.Add(startButton);
-
-        // Options Button
-        var optionsButton = new Button(new Rectangle(300, 275, 200, 50), "Options");
-        optionsButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.Options);
-        _mainMenuComponents.Add(optionsButton);
-
-        // Exit Button
-        var exitButton = new Button(new Rectangle(300, 350, 200, 50), "Exit");
-        exitButton.OnClick += Exit;
-        _mainMenuComponents.Add(exitButton);
-    }
-
-    private void CreateOptionsUI()
-    {
-        _optionsComponents.Clear();
-        
-        // Grid Size Dropdown
-        var sizeLabel = new Button(new Rectangle(200, 150, 200, 30), "Grid Size:");
-        sizeLabel.BackgroundColor = Color.Transparent;
-        sizeLabel.TextColor = Color.Black;
-        _optionsComponents.Add(sizeLabel);
-        
-        var sizeOptions = new string[] { "4x4 (2x2)", "9x9 (3x3)" };
-        var sizeDropdown = new Dropdown(new Rectangle(400, 150, 200, 30), sizeOptions, _gameConfig.Size - 2);
-        sizeDropdown.OnSelectionChanged += (index) => {
-            _gameConfig.Size = index + 2;
-            // Actualizar el panel si ya existe
-            UpdateValueSelectionPanel();
-        };
-        _optionsComponents.Add(sizeDropdown);
-
-        // Difficulty Dropdown
-        var difficultyLabel = new Button(new Rectangle(200, 200, 200, 30), "Difficulty:");
-        difficultyLabel.BackgroundColor = Color.Transparent;
-        difficultyLabel.TextColor = Color.Black;
-        _optionsComponents.Add(difficultyLabel);
-        
-        var difficultyOptions = new string[] { "Easy", "Medium", "Hard", "Expert" };
-        var difficultyDropdown = new Dropdown(new Rectangle(400, 200, 200, 30), difficultyOptions, _gameConfig.Difficulty - 1);
-        difficultyDropdown.OnSelectionChanged += (index) => _gameConfig.Difficulty = index + 1;
-        _optionsComponents.Add(difficultyDropdown);
-
-        // Style Dropdown
-        var styleLabel = new Button(new Rectangle(200, 250, 200, 30), "Style:");
-        styleLabel.BackgroundColor = Color.Transparent;
-        styleLabel.TextColor = Color.Black;
-        _optionsComponents.Add(styleLabel);
-        
-        var styleOptions = new string[] { "Numbers", "Emojis", "Letters", "Colors" };
-        var styleDropdown = new Dropdown(new Rectangle(400, 250, 200, 30), styleOptions, (int)_gameConfig.RepresentationType);
-        styleDropdown.OnSelectionChanged += (index) => {
-            _gameConfig.RepresentationType = (RepresentationFactory.RepresentationType)index;
-            // Actualizar el panel si ya existe
-            UpdateValueSelectionPanel();
-        };
-        _optionsComponents.Add(styleDropdown);
-
-        // Apply Button
-        var applyButton = new Button(new Rectangle(250, 350, 150, 50), "Apply");
-        applyButton.OnClick += () => 
-        {
-            if (_gameInitialized)
-            {
-                InitializeNewGame();
-                _gameStateManager.ChangeState(GameStateType.Playing);
-            }
-            else
-            {
-                _gameStateManager.ChangeState(GameStateType.MainMenu);
-            }
-        };
-        _optionsComponents.Add(applyButton);
-
-        // Back Button
-        var backButton = new Button(new Rectangle(425, 350, 150, 50), "Back");
-        backButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
-        _optionsComponents.Add(backButton);
-    }
-
-    private void CreateGameplayUI()
-    {
-        _gameplayComponents.Clear();
-        
-        // New Game Button
-        var newGameButton = new Button(new Rectangle(650, 100, 120, 40), "New Game");
-        newGameButton.OnClick += () => 
-        {
-            InitializeNewGame();
-        };
-        _gameplayComponents.Add(newGameButton);
-
-        // Options Button
-        var optionsButton = new Button(new Rectangle(650, 160, 120, 40), "Options");
-        optionsButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.Options);
-        _gameplayComponents.Add(optionsButton);
-
-        // Back to Menu Button
-        var menuButton = new Button(new Rectangle(650, 220, 120, 40), "Main Menu");
-        menuButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
-        _gameplayComponents.Add(menuButton);
-
-        // Calcular tamaño y posición del panel de selección de valores
-        int panelWidth = 180;
-        int panelHeight = 180;
-        int panelX = 650;  // Alineado con los botones
-        int panelY = 280;  // Debajo de los botones
-        
-        // Crear panel de selección de valores
-        _valueSelectionPanel = new ValueSelectionPanel(
-            new Rectangle(panelX, panelY, panelWidth, panelHeight),
-            GameConfig.Instance.GridSize,
-            GameConfig.Instance.Representation);
-        
-        // Manejar el evento de selección de valor
-        _valueSelectionPanel.OnValueSelected += (value) => {
-            if (_selectedRow >= 0 && _selectedCol >= 0 && !_sudokuGrid.Revealed[_selectedRow, _selectedCol])
-            {
-                _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, value);
-            }
-        };
-        
-        _gameplayComponents.Add(_valueSelectionPanel);
-    }
-
-    private void CreateGameOverUI()
-    {
-        _gameOverComponents.Clear();
-        
-        // New Game Button
-        var newGameButton = new Button(new Rectangle(300, 300, 200, 50), "New Game");
-        newGameButton.OnClick += () => 
-        {
-            InitializeNewGame();
-            _gameStateManager.ChangeState(GameStateType.Playing);
-        };
-        _gameOverComponents.Add(newGameButton);
-
-        // Back to Menu Button
-        var menuButton = new Button(new Rectangle(300, 375, 200, 50), "Main Menu");
-        menuButton.OnClick += () => _gameStateManager.ChangeState(GameStateType.MainMenu);
-        _gameOverComponents.Add(menuButton);
-    }
-
-    private void InitializeNewGame()
-    {
-        _sudokuGrid = new SudokuGrid(_gameConfig.Size);
-        _sudokuGrid.CreatePuzzle(_gameConfig.Difficulty);
-        _selectedRow = -1;
-        _selectedCol = -1;
-        _puzzleSolved = false;
-        _gameInitialized = true;
-        
-        // Actualizar el panel de selecciu00f3n de valores con la configuracion actual
-        UpdateValueSelectionPanel();
-    }
-    
-    private void UpdateValueSelectionPanel()
-    {
-        // Solo actualizar si estamos en modo de juego y el panel ya existe
-        if (_valueSelectionPanel != null && _gameStateManager.CurrentState == GameStateType.Playing)
-        {
-            // Mantener la misma posición y tamaño, pero actualizar con los nuevos valores
-            Rectangle bounds = _valueSelectionPanel.Bounds;
-            
-            // Crear un nuevo panel con la configuración actual
-            _valueSelectionPanel = new ValueSelectionPanel(
-                bounds,
-                _gameConfig.GridSize,
-                _gameConfig.Representation);
-            
-            // Restaurar el manejador de eventos
-            _valueSelectionPanel.OnValueSelected += (value) => {
-                if (_selectedRow >= 0 && _selectedCol >= 0 && !_sudokuGrid.Revealed[_selectedRow, _selectedCol])
-                {
-                    _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, value);
-                }
-            };
-            
-            // Reemplazar el panel antiguo en la lista de componentes
-            for (int i = 0; i < _gameplayComponents.Count; i++)
-            {
-                if (_gameplayComponents[i] is ValueSelectionPanel)
-                {
-                    _gameplayComponents[i] = _valueSelectionPanel;
-                    break;
-                }
-            }
-        }
+        _uiManager.Load(this, _font);
+        Console.WriteLine("UI components loaded");
     }
 
     protected override void Update(GameTime gameTime)
@@ -286,13 +78,13 @@ namespace monogame_test
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
             Keyboard.GetState().IsKeyDown(Keys.Escape))
         {
-            if (_gameStateManager.CurrentState == GameStateType.Playing)
+            if (gameStateManager.CurrentState == GameStateType.Playing)
             {
-                _gameStateManager.ChangeState(GameStateType.MainMenu);
+                gameStateManager.ChangeState(GameStateType.MainMenu);
             }
-            else if (_gameStateManager.CurrentState == GameStateType.Options)
+            else if (gameStateManager.CurrentState == GameStateType.Options)
             {
-                _gameStateManager.ChangeState(GameStateType.MainMenu);
+                gameStateManager.ChangeState(GameStateType.MainMenu);
             }
             else
             {
@@ -305,7 +97,7 @@ namespace monogame_test
         var keyboardState = Keyboard.GetState();
 
         // Update UI based on game state
-        switch (_gameStateManager.CurrentState)
+        switch (gameStateManager.CurrentState)
         {
             case GameStateType.MainMenu:
                 UpdateMainMenu(mouseState);
@@ -358,13 +150,13 @@ namespace monogame_test
             component.Update(mouseState, _prevMouseState);
         }
 
-        if (_gameInitialized && !_puzzleSolved)
+        if (gameStateManager.gameInitialized && !gameStateManager.puzzleSolved)
         {
             // Check if puzzle is solved
             if (_sudokuGrid.IsSolved())
             {
-                _puzzleSolved = true;
-                _gameStateManager.ChangeState(GameStateType.GameOver);
+                gameStateManager.puzzleSolved = true;
+                gameStateManager.ChangeState(GameStateType.GameOver);
                 return;
             }
 
@@ -407,22 +199,22 @@ namespace monogame_test
                     // Can't select revealed cells
                     if (!_sudokuGrid.Revealed[row, col])
                     {
-                        _selectedRow = row;
-                        _selectedCol = col;
+                        _sudokuGrid.selectedRow = row;
+                        _sudokuGrid.selectedCol = col;
                     }
                     else
                     {
                         // When clicking on revealed cell, deselect
-                        _selectedRow = -1;
-                        _selectedCol = -1;
+                        _sudokuGrid.selectedRow = -1;
+                        _sudokuGrid.selectedCol = -1;
                     }
                 }
             }
             else
             {
                 // When clicking outside grid, deselect
-                _selectedRow = -1;
-                _selectedCol = -1;
+                _sudokuGrid.selectedRow = -1;
+                _sudokuGrid.selectedCol = -1;
             }
         }
     }
@@ -446,7 +238,7 @@ namespace monogame_test
         if (moveDirection == -1) return;
         
         // Initialize selection if needed
-        if (_selectedRow < 0 || _selectedCol < 0)
+        if (_sudokuGrid.selectedRow < 0 || _sudokuGrid.selectedCol < 0)
         {
             InitializeSelection();
             return;
@@ -456,21 +248,21 @@ namespace monogame_test
         switch (moveDirection)
         {
             case 0: // Left
-                _selectedCol = (_selectedCol > 0) ? _selectedCol - 1 : gridSize - 1;
+                _sudokuGrid.selectedCol = (_sudokuGrid.selectedCol > 0) ? _sudokuGrid.selectedCol - 1 : gridSize - 1;
                 break;
             case 1: // Right
-                _selectedCol = (_selectedCol < gridSize - 1) ? _selectedCol + 1 : 0;
+                _sudokuGrid.selectedCol = (_sudokuGrid.selectedCol < gridSize - 1) ? _sudokuGrid.selectedCol + 1 : 0;
                 break;
             case 2: // Up
-                _selectedRow = (_selectedRow > 0) ? _selectedRow - 1 : gridSize - 1;
+                _sudokuGrid.selectedRow = (_sudokuGrid.selectedRow > 0) ? _sudokuGrid.selectedRow - 1 : gridSize - 1;
                 break;
             case 3: // Down
-                _selectedRow = (_selectedRow < gridSize - 1) ? _selectedRow + 1 : 0;
+                _sudokuGrid.selectedRow = (_sudokuGrid.selectedRow < gridSize - 1) ? _sudokuGrid.selectedRow + 1 : 0;
                 break;
         }
         
         // If we land on a revealed cell, find next non-revealed cell
-        if (_sudokuGrid.Revealed[_selectedRow, _selectedCol])
+        if (_sudokuGrid.Revealed[_sudokuGrid.selectedRow, _sudokuGrid.selectedCol])
         {
             // Skip revealed cells in the same direction
             FindNextNonRevealedCell(moveDirection, gridSize);
@@ -480,8 +272,8 @@ namespace monogame_test
     // Extremadamente optimizado para velocidad de navegaciu00f3n
     private void FindNextNonRevealedCell(int moveDirection, int gridSize)
     {
-        int startRow = _selectedRow;
-        int startCol = _selectedCol;
+        int startRow = _sudokuGrid.selectedRow;
+        int startCol = _sudokuGrid.selectedCol;
         
         // Continuar moviendo en la misma direcciu00f3n hasta encontrar una celda no revelada o dar la vuelta completa
         do 
@@ -490,27 +282,27 @@ namespace monogame_test
             switch (moveDirection)
             {
                 case 0: // Izquierda
-                    _selectedCol = (_selectedCol > 0) ? _selectedCol - 1 : gridSize - 1;
+                    _sudokuGrid.selectedCol = (_sudokuGrid.selectedCol > 0) ? _sudokuGrid.selectedCol - 1 : gridSize - 1;
                     break;
                 case 1: // Derecha
-                    _selectedCol = (_selectedCol < gridSize - 1) ? _selectedCol + 1 : 0;
+                    _sudokuGrid.selectedCol = (_sudokuGrid.selectedCol < gridSize - 1) ? _sudokuGrid.selectedCol + 1 : 0;
                     break;
                 case 2: // Arriba
-                    _selectedRow = (_selectedRow > 0) ? _selectedRow - 1 : gridSize - 1;
+                    _sudokuGrid.selectedRow = (_sudokuGrid.selectedRow > 0) ? _sudokuGrid.selectedRow - 1 : gridSize - 1;
                     break;
                 case 3: // Abajo
-                    _selectedRow = (_selectedRow < gridSize - 1) ? _selectedRow + 1 : 0;
+                    _sudokuGrid.selectedRow = (_sudokuGrid.selectedRow < gridSize - 1) ? _sudokuGrid.selectedRow + 1 : 0;
                     break;
             }
             
             // Verificar si encontramos una celda no revelada
-            if (!_sudokuGrid.Revealed[_selectedRow, _selectedCol])
+            if (!_sudokuGrid.Revealed[_sudokuGrid.selectedRow, _sudokuGrid.selectedCol])
             {
                 return; // Encontramos una celda vu00e1lida, salir
             }
             
             // Verificar si hemos dado una vuelta completa
-        } while (_selectedRow != startRow || _selectedCol != startCol);
+        } while (_sudokuGrid.selectedRow != startRow || _sudokuGrid.selectedCol != startCol);
         
         // Si no encontramos ninguna celda no revelada en la direcciu00f3n actual, buscar en todo el tablero
         for (int row = 0; row < gridSize; row++)
@@ -519,8 +311,8 @@ namespace monogame_test
             {
                 if (!_sudokuGrid.Revealed[row, col])
                 {
-                    _selectedRow = row;
-                    _selectedCol = col;
+                    _sudokuGrid.selectedRow = row;
+                    _sudokuGrid.selectedCol = col;
                     return;
                 }
             }
@@ -530,7 +322,7 @@ namespace monogame_test
     // If no cell is selected yet, select the first non-revealed cell
     private void InitializeSelection()
     {
-        if (_selectedRow < 0 || _selectedCol < 0)
+        if (_sudokuGrid.selectedRow < 0 || _sudokuGrid.selectedCol < 0)
         {
             for (int row = 0; row < _sudokuGrid.GridSize; row++)
             {
@@ -538,8 +330,8 @@ namespace monogame_test
                 {
                     if (!_sudokuGrid.Revealed[row, col])
                     {
-                        _selectedRow = row;
-                        _selectedCol = col;
+                        _sudokuGrid.selectedRow = row;
+                        _sudokuGrid.selectedCol = col;
                         return;
                     }
                 }
@@ -550,7 +342,7 @@ namespace monogame_test
     private void HandleNumberInput(KeyboardState keyboardState)
     {
         // Only process number input if a valid cell is selected (not revealed)
-        if (_selectedRow >= 0 && _selectedCol >= 0 && !_sudokuGrid.Revealed[_selectedRow, _selectedCol])
+        if (_sudokuGrid.selectedRow >= 0 && _sudokuGrid.selectedCol >= 0 && !_sudokuGrid.Revealed[_sudokuGrid.selectedRow, _sudokuGrid.selectedCol])
         {
             // Check for number keys (1-9 for 9x9 grid, 1-4 for 4x4 grid)
             for (int i = 1; i <= _sudokuGrid.GridSize; i++) // Start from 1, not 0
@@ -563,7 +355,7 @@ namespace monogame_test
                     (keyboardState.IsKeyDown(numPadKey) && !_prevKeyboardState.IsKeyDown(numPadKey)))
                 {
                     // Place the number in the grid
-                    _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, i);
+                    _sudokuGrid.PlaceNumber(_sudokuGrid.selectedRow, _sudokuGrid.selectedCol, i);
                     // Add sound or visual feedback here if desired
                     break; // Exit after processing a number key
                 }
@@ -575,7 +367,7 @@ namespace monogame_test
                 (keyboardState.IsKeyDown(Keys.D0) && !_prevKeyboardState.IsKeyDown(Keys.D0)) ||
                 (keyboardState.IsKeyDown(Keys.NumPad0) && !_prevKeyboardState.IsKeyDown(Keys.NumPad0)))
             {
-                _sudokuGrid.PlaceNumber(_selectedRow, _selectedCol, 0);
+                _sudokuGrid.PlaceNumber(_sudokuGrid.selectedRow, _sudokuGrid.selectedCol, 0);
                 // Add sound or visual feedback for clearing a cell
             }
         }
@@ -587,7 +379,7 @@ namespace monogame_test
         _spriteBatch.Begin();
 
         // Draw based on current game state
-        switch (_gameStateManager.CurrentState)
+        switch (gameStateManager.CurrentState)
         {
             case GameStateType.MainMenu:
                 DrawMainMenu();
@@ -645,7 +437,7 @@ namespace monogame_test
         }
         
         // Luego dibujamos el contenido de los dropdowns por encima de todo
-        foreach (var component in _optionsComponents)
+        foreach (var component in UI_Manager.Instance.optionsComponents)
         {
             if (component is Dropdown dropdown)
             {
@@ -656,13 +448,13 @@ namespace monogame_test
 
     private void DrawGameplay()
     {
-        if (!_gameInitialized) return;
+        if (!gameStateManager.gameInitialized) return;
 
         // Draw grid
         DrawSudokuGrid();
         
         // Dibujamos todos los componentes
-        foreach (var component in _gameplayComponents)
+        foreach (var component in UI_Manager.Instance.gameplayComponents)
         {
             component.Draw(_spriteBatch, _font);
         }
@@ -681,7 +473,7 @@ namespace monogame_test
         _spriteBatch.DrawString(_font, message, new Vector2(400 - messageSize.X / 2, 220), Color.Black);
 
         // Draw UI components
-        foreach (var component in _gameOverComponents)
+        foreach (var component in UI_Manager.Instance.gameOverComponents)
         {
             component.Draw(_spriteBatch, _font);
         }
@@ -713,7 +505,7 @@ namespace monogame_test
                 Color cellBackground = Color.White;
                 
                 // Apply cell coloring
-                if (row == _selectedRow && col == _selectedCol)
+                if (row == _sudokuGrid.selectedRow && col == _sudokuGrid.selectedCol)
                 {
                     cellBackground = SelectedCellColor;
                 }
@@ -738,7 +530,7 @@ namespace monogame_test
                 _spriteBatch.Draw(new Texture2D(GraphicsDevice, 1, 1), cellRect, cellBackground);
                 
                 // Draw cell border
-                if (row == _selectedRow && col == _selectedCol)
+                if (row == _sudokuGrid.selectedRow && col == _sudokuGrid.selectedCol)
                 {
                     // Draw a thicker, colored border for the selected cell
                     DrawRectangle(cellRect, SelectedCellBorderColor, 3);
@@ -754,9 +546,9 @@ namespace monogame_test
                 // 2. Cells modified by the player
                 // 3. All cells if the puzzle is solved
                 if (_sudokuGrid.Grid[row, col] != 0 && 
-                    (_sudokuGrid.Revealed[row, col] || _sudokuGrid.PlayerModified[row, col] || _puzzleSolved))
+                    (_sudokuGrid.Revealed[row, col] || _sudokuGrid.PlayerModified[row, col] || gameStateManager.puzzleSolved))
                 {
-                    string cellText = _gameConfig.Representation.GetRepresentation(_sudokuGrid.Grid[row, col]);
+                    string cellText = GameConfig.Instance.Representation.GetRepresentation(_sudokuGrid.Grid[row, col]);
                     Vector2 textSize = _font.MeasureString(cellText);
                     Vector2 textPos = new Vector2(
                         GridMargin + col * CellSize + (CellSize - textSize.X) / 2,

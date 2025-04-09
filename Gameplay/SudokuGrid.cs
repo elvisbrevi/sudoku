@@ -5,6 +5,10 @@ namespace monogame_test.Models
 {
     public class SudokuGrid
     {
+        // Singleton instance
+        private static SudokuGrid _instance;
+        private static readonly object _lock = new object();
+
         private int[,] _grid;
         private bool[,] _revealed;
         private bool[,] _playerModified; // Track cells modified by the player
@@ -12,13 +16,55 @@ namespace monogame_test.Models
         private int _boxSize;
         private Random _random = new Random();
 
+        // Public accessor for the singleton instance
+        public static SudokuGrid Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    throw new InvalidOperationException("SudokuGrid must be initialized with Initialize method before accessing Instance");
+                }
+                return _instance;
+            }
+        }
+
+        // Method to initialize the singleton with parameters
+        public static void Initialize(int boxSize)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new SudokuGrid(boxSize);
+                }
+                else
+                {
+                    throw new InvalidOperationException("SudokuGrid is already initialized");
+                }
+            }
+        }
+
+        // Method to reset the singleton (useful for testing or creating new games)
+        public static void Reset()
+        {
+            lock (_lock)
+            {
+                _instance = null;
+            }
+        }
+
         public int[,] Grid => _grid;
         public bool[,] Revealed => _revealed;
         public bool[,] PlayerModified => _playerModified; // Public accessor for player-modified cells
         public int GridSize => _gridSize;
         public int BoxSize => _boxSize;
 
-        public SudokuGrid(int boxSize)
+        public int selectedRow = -1;
+        public int selectedCol = -1;
+
+        // Changed to private constructor for singleton pattern
+        private SudokuGrid(int boxSize)
         {
             _boxSize = boxSize;
             _gridSize = boxSize * boxSize;
@@ -247,8 +293,6 @@ namespace monogame_test.Models
                 _playerModified[row, col] = true;
                 return true;
             }
-
-            return false;
         }
 
         // Check if the puzzle is solved
